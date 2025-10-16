@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 from odd_cycles import getCycles
 
 # ネットワークを模した無向グラフG=(V,E)
-G = nx.Graph([(1,12), (1,27), (2,3), (2,13), (2,28), (3,4), (3,14), (4,5), (4,17), (5,6), (5,21), (6,7), (6,16), (7,8), (8,9), (8,23), (9,10),
+G = nx.Graph()
+G.add_nodes_from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28])
+G.add_edges_from([(1,12), (1,27), (2,3), (2,13), (2,28), (3,4), (3,14), (4,5), (4,17), (5,6), (5,21), (6,7), (6,16), (7,8), (8,9), (8,23), (9,10),
      (10,11), (10,15), (11,24), (12,13), (12,15), (12,26), (14,15), (14,16), (17,18), (18,19), (19,20), (20,21), (21,22), (22,23),
      (24,25), (25,26), (27,28)])
 V =  set(G.nodes)  # ノード集合
@@ -35,7 +37,9 @@ path, w_use = routing(R,V,E_directed,E_outgoing,E_incoming)
 
 # リクエストをノードとした隣接グラフG-R=(V_R,E_R)
 G_R = nx.Graph()
+G_R.add_nodes_from(list(R.keys()))
 W = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+colorList = {1:"red", 2:"blue", 3:"yellow", 4:"green", 5:"pink"}
 
 for r1 in R:
     p1 = path[r1]
@@ -43,7 +47,7 @@ for r1 in R:
         if r1 < r2:
             p2 = path[r2]
             if not p1.isdisjoint(p2):
-                G_R.add_edge((r1,r2))
+                G_R.add_edge(r1,r2)
 
 
 # for r in R:
@@ -51,25 +55,66 @@ for r1 in R:
 # print('--- リンクを共有するリクエスト ---')
 # print(E_R)
 
-w_alloc, w_wp = WP(V=V_R,E=E_R,colors=W)
+w_alloc, w_wp = WP(G_R,colors=W)
 
 cycleList = []
-# if w_wp > w_use:
-#     if w_use < 3:
-#         getCycles(G_R,cycleList,1,-1)
-#         oddCycleList = []
-#         for cycle in cycleList:
-#             if len(cycle)>3 and len(cycle)%2==1:    oddCycleList.append(cycle)
-#         while len(oddCycleList)>0:
-#             # 大きさが最大の閉路を見つける
-#             largestCycle = oddCycleList[0]
-#             for oddCycle in oddCycleList:
-#                 if len(largestCycle)<len(oddCycle):   largestCycle = oddCycle[:]
-#             # 次元数が最小のノードを見つける
-#             least = largestCycle[0]
-#             for v in largestCycle:
-#                 if G_R.degree[least]>G_R.degree[v]: least = v
-#             # 閉路内の辺を1本カッティング
-#             for v in list(G_R.adj[least].keys()):
-#                 if v in largestCycle:
-#                     G_R.remove_edge
+loop = 0
+if w_wp > w_use:
+    if w_use < 3:
+        getCycles(G_R,cycleList,1,-1)
+        oddCycleList = []
+        for cycle in cycleList:
+            if len(cycle)>3 and len(cycle)%2==1:    oddCycleList.append(cycle)
+        pares = []
+        while len(oddCycleList)>0:
+            print(f"奇閉路の集合：{oddCycleList}")
+            # 奇閉路に使用される回数を記録する
+            freqency = {r:0 for r in R}
+            for oddCycle in oddCycleList:
+                for v in oddCycle:
+                    freqency[v] += 1
+            # 大きさが最大の閉路を見つける
+            largestCycle = oddCycleList[0]
+            for oddCycle in oddCycleList:
+                if len(largestCycle) < len(oddCycle):   largestCycle = oddCycle[:]
+            print(f"最大の閉路：{largestCycle}")
+            # 次元数が最小のノードを見つける
+            least = largestCycle[0]
+            
+            for v in largestCycle:
+                print(v)
+                if G_R.degree[least]>G_R.degree[v]: least = v
+            # 閉路内の辺を1本カッティング
+            print(least)
+            if loop == 10:
+                print("無限ループ")
+                break
+            largest = -1
+            frq = 0
+            for v in list(G_R.adj[least].keys()):
+                if v in largestCycle and frq < freqency[v]:
+                    largest = v
+                    frq = freqency[largest]
+            G_R.remove_edge(least, largest)
+            pares.append((least, largest))
+            print(oddCycleList)
+            for oddCycle in oddCycleList:
+                if least in oddCycle:
+                    if largest in oddCycle:
+                        print(f"消える閉路：{oddCycle}")
+                        oddCycleList.remove(oddCycle)
+        print(pares)
+        # RWAを更新して実行
+        # path, w_use = routing(R, V, E_directed, E_outgoing, E_incoming, pares)
+        # w_alloc, w_wp = WP(G_R,colors=W)
+    else:   pass
+else:   pass
+
+nx.draw(G_R, node_color = [colorList[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
+plt.show()
+
+# for r in R:
+#     print(f"リクエスト{r}")
+#     print(f"パス：{path[r]}")
+#     print(f"使用する波長：{w_alloc[r]}")
+#     print("----------------------------")

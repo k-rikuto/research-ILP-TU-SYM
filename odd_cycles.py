@@ -35,7 +35,6 @@ def getCycles(graph:nx.Graph, cycleList:list,v:int, former:int):
         # 探索が終了
         history = history[:-1]
         visited[v] = False
-   
 
 
 # 動作確認

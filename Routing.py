@@ -1,6 +1,7 @@
 from gurobipy import Model,GRB,quicksum
 
-def routing(R:dict, V:set, E:set, E_outgoing:dict, E_incoming:dict):
+# pares: リンクを共有しないノードのペア(v,u)の集合
+def routing(R:dict, V:set, E:set, E_outgoing:dict, E_incoming:dict, pares:list[tuple]=None):
     model = Model("routing")
 
     x = {}
@@ -20,6 +21,12 @@ def routing(R:dict, V:set, E:set, E_outgoing:dict, E_incoming:dict):
     
     for e in E:
         model.addConstr(quicksum(x[r,e] for r in R)<=w_max)
+    
+    # リクエストr1とリクエストr2がリンクを共有しないようにする制約
+    if pares is not None:
+        for r1,r2 in pares:
+            for e in E:
+                model.addConstr(x[r1,e]+x[r2,e]<=1)
     
     model.setObjective(w_max, GRB.MINIMIZE)
     model.optimize()
