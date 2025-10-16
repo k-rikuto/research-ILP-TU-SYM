@@ -33,7 +33,7 @@ for u,v in E:
 R = {1:(1,9), 2:(2,5), 3:(3,16), 4:(8,22), 5:(21,10), 6:(9,5), 7:(6,1), 8:(4,28), 9:(23,25)}    # リクエスト集合
 
 # # routing
-path, w_use = routing(R,V,E_directed,E_outgoing,E_incoming)
+path, w_use = routing(R, V, E_directed, E_outgoing, E_incoming)
 
 # リクエストをノードとした隣接グラフG-R=(V_R,E_R)
 G_R = nx.Graph()
@@ -53,21 +53,23 @@ for r1 in R:
 # for r in R:
 #     print(path[r])
 # print('--- リンクを共有するリクエスト ---')
-# print(E_R)
+# print(list(G_R.edges))
 
-w_alloc, w_wp = WP(G_R,colors=W)
+w_alloc, w_wp = WP(G_R,colors=W.copy())
+nx.draw(G_R, node_color = [colorList[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
+plt.show()
 
-cycleList = []
 loop = 0
 if w_wp > w_use:
     if w_use < 3:
-        getCycles(G_R,cycleList,1,-1)
+
+        cycleList = []
         oddCycleList = []
-        for cycle in cycleList:
-            if len(cycle)>3 and len(cycle)%2==1:    oddCycleList.append(cycle)
         pares = []
-        while len(oddCycleList)>0:
-            print(f"奇閉路の集合：{oddCycleList}")
+        getCycles(G_R,cycleList,1,-1)
+        for cycle in cycleList:
+            if len(cycle) > 3 and len(cycle)%2 == 1:    oddCycleList.append(cycle)
+        while len(oddCycleList) > 0:
             # 奇閉路に使用される回数を記録する
             freqency = {r:0 for r in R}
             for oddCycle in oddCycleList:
@@ -76,19 +78,12 @@ if w_wp > w_use:
             # 大きさが最大の閉路を見つける
             largestCycle = oddCycleList[0]
             for oddCycle in oddCycleList:
-                if len(largestCycle) < len(oddCycle):   largestCycle = oddCycle[:]
-            print(f"最大の閉路：{largestCycle}")
+                if len(largestCycle) < len(oddCycle):   largestCycle = oddCycle
             # 次元数が最小のノードを見つける
             least = largestCycle[0]
-            
             for v in largestCycle:
-                print(v)
-                if G_R.degree[least]>G_R.degree[v]: least = v
+                if G_R.degree[least] > G_R.degree[v]: least = v
             # 閉路内の辺を1本カッティング
-            print(least)
-            if loop == 10:
-                print("無限ループ")
-                break
             largest = -1
             frq = 0
             for v in list(G_R.adj[least].keys()):
@@ -97,24 +92,24 @@ if w_wp > w_use:
                     frq = freqency[largest]
             G_R.remove_edge(least, largest)
             pares.append((least, largest))
-            print(oddCycleList)
+            oddCycles_remove = [] # (least, largest)の辺を持つ奇閉路をまとめて消す
             for oddCycle in oddCycleList:
-                if least in oddCycle:
-                    if largest in oddCycle:
-                        print(f"消える閉路：{oddCycle}")
-                        oddCycleList.remove(oddCycle)
-        print(pares)
+                if least in oddCycle and largest in oddCycle:
+                    oddCycles_remove.append(oddCycle)
+            for remove in oddCycles_remove:
+                oddCycleList.remove(remove)
         # RWAを更新して実行
-        # path, w_use = routing(R, V, E_directed, E_outgoing, E_incoming, pares)
-        # w_alloc, w_wp = WP(G_R,colors=W)
+        path, w_use = routing(R, V, E_directed, E_outgoing, E_incoming,pares=pares)
+        w_alloc, w_wp = WP(G_R, colors=W.copy())
     else:   pass
 else:   pass
 
+print(f"削除するリンク：{pares}")
+for r in R:
+    print(f"リクエスト{r}")
+    print(f"パス：{path[r]}")
+    print(f"使用する波長：{w_alloc[r]}")
+    print("----------------------------")
+
 nx.draw(G_R, node_color = [colorList[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
 plt.show()
-
-# for r in R:
-#     print(f"リクエスト{r}")
-#     print(f"パス：{path[r]}")
-#     print(f"使用する波長：{w_alloc[r]}")
-#     print("----------------------------")

@@ -24,6 +24,7 @@ def routing(R:dict, V:set, E:set, E_outgoing:dict, E_incoming:dict, pares:list[t
     
     # リクエストr1とリクエストr2がリンクを共有しないようにする制約
     if pares is not None:
+        print("制約あり")
         for r1,r2 in pares:
             for e in E:
                 model.addConstr(x[r1,e]+x[r2,e]<=1)
@@ -34,9 +35,9 @@ def routing(R:dict, V:set, E:set, E_outgoing:dict, E_incoming:dict, pares:list[t
     path = {r:set() for r in R}
     EPS = 1.e-6
     for r,e in x:
-        v1,v2 = e
+        v,u = e
         if x[r,e].X>EPS:
-            if v1 > v2: path[r].add((v2,v1))
+            if v > u:   path[r].add((u,v))
             else:   path[r].add(e)
 
     return path, w_max.X
