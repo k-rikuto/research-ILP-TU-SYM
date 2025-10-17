@@ -56,13 +56,14 @@ for r1 in R:
 # print(list(G_R.edges))
 
 w_alloc, w_wp = WP(G_R,colors=W.copy())
-nx.draw(G_R, node_color = [colorList[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
-plt.show()
+# nx.draw(G_R, node_color = [colorList[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
+# plt.show()
 
 loop = 0
+print(w_wp, w_use)
 if w_wp > w_use:
+    print(w_use)
     if w_use < 3:
-
         cycleList = []
         oddCycleList = []
         pares = []
@@ -104,12 +105,24 @@ if w_wp > w_use:
     else:   pass
 else:   pass
 
-print(f"削除するリンク：{pares}")
+
 for r in R:
     print(f"リクエスト{r}")
     print(f"パス：{path[r]}")
     print(f"使用する波長：{w_alloc[r]}")
     print("----------------------------")
+
+# 確認用
+# G_sub = nx.Graph()
+# G_sub.add_nodes_from(list(R.keys()))
+# for r1 in R:
+#     p1 = path[r1]
+#     for r2 in R:
+#         if r1 < r2:
+#             p2 = path[r2]
+#             if not p1.isdisjoint(p2):
+#                 G_sub.add_edge(r1,r2)
+# print(f"リンクを共有しているノードの集合：{list(G_sub.edges)}")
 
 nx.draw(G_R, node_color = [colorList[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
 plt.show()

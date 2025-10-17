@@ -20,14 +20,20 @@ def routing(R:dict, V:set, E:set, E_outgoing:dict, E_incoming:dict, pares:list[t
             model.addConstr(quicksum(x[r,e] for e in E_incoming[v])-quicksum(x[r,e] for e in E_outgoing[v])==0)
     
     for e in E:
-        model.addConstr(quicksum(x[r,e] for r in R)<=w_max)
+        v,u = e
+        e_reverse = (u,v)
+        if v < u:
+            model.addConstr(quicksum(x[r,e] for r in R)+quicksum(x[r,e_reverse] for r in R)<=w_max)
     
     # リクエストr1とリクエストr2がリンクを共有しないようにする制約
     if pares is not None:
         print("制約あり")
         for r1,r2 in pares:
             for e in E:
-                model.addConstr(x[r1,e]+x[r2,e]<=1)
+                v,u = e
+                e_reverse = (u,v)
+                if v < u:
+                    model.addConstr(x[r1,e]+x[r2,e]+x[r1,e_reverse]+x[r2,e_reverse]<=1)
     
     model.setObjective(w_max, GRB.MINIMIZE)
     model.optimize()
