@@ -1,9 +1,10 @@
 from gurobipy import Model,GRB
 from Routing import routing
-from welch_powell import WP
+from Welch_Powell import WP
 import networkx as nx
 import matplotlib.pyplot as plt
 from odd_cycles import getCycles
+import random
 
 # ネットワークを模した無向グラフG=(V,E)
 G = nx.Graph()
@@ -30,8 +31,15 @@ for u,v in E:
 #     print(f"{v}へ入るリンク集合：{E_incoming[v]}")
 
 # R = [(1,9), (2,5), (3,16), (8,22), (21,10), (9,5), (6,1), (4,28), (19,25)]
-R = {1:(1,9), 2:(2,5), 3:(3,16), 4:(8,22), 5:(21,10), 6:(9,5), 7:(6,1), 8:(4,28), 9:(23,25)}    # リクエスト集合
+# R = {1:(1,9), 2:(2,5), 3:(3,16), 4:(8,22), 5:(21,10), 6:(9,5), 7:(6,1), 8:(4,28), 9:(23,25)}    # リクエスト集合
+R = {}
+R_size = 20
+for r in range(1,R_size+1):
+    # ノードの中から2つをランダムで選択する
+    [src, dist] = random.sample(list(V), 2)
+    R[r] = (src, dist)
 
+print(R)
 # # routing
 path, w_use = routing(R, V, E_directed, E_outgoing, E_incoming)
 
@@ -39,7 +47,11 @@ path, w_use = routing(R, V, E_directed, E_outgoing, E_incoming)
 G_R = nx.Graph()
 G_R.add_nodes_from(list(R.keys()))
 W = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-colorList = {1:"red", 2:"blue", 3:"yellow", 4:"green", 5:"pink"}
+colorList = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'magenta', 'lime', 'cyan', 'pink', 'navy', 'salmon']
+colorMap = {}
+for w in W:
+    color = colorList.pop(0)
+    colorMap[w] = color
 
 for r1 in R:
     p1 = path[r1]
@@ -55,14 +67,13 @@ for r1 in R:
 # print('--- リンクを共有するリクエスト ---')
 # print(list(G_R.edges))
 
-w_alloc, w_wp = WP(G_R,colors=W.copy())
-# nx.draw(G_R, node_color = [colorList[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
+w_alloc, w_wp = WP(G_R, colors=W.copy())
+# nx.draw(G_R, node_color = [colorMap[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
 # plt.show()
 
 loop = 0
 print(w_wp, w_use)
 if w_wp > w_use:
-    print(w_use)
     if w_use < 3:
         cycleList = []
         oddCycleList = []
@@ -102,15 +113,16 @@ if w_wp > w_use:
         # RWAを更新して実行
         path, w_use = routing(R, V, E_directed, E_outgoing, E_incoming,pares=pares)
         w_alloc, w_wp = WP(G_R, colors=W.copy())
-    else:   pass
-else:   pass
+        for r in R:
+            print(f"リクエスト{r}")
+            print(f"パス：{path[r]}")
+            print(f"使用する波長：{w_alloc[r]}")
+            print("----------------------------")
+    else:   print("未解決")
+else:   print("未解決")
 
 
-for r in R:
-    print(f"リクエスト{r}")
-    print(f"パス：{path[r]}")
-    print(f"使用する波長：{w_alloc[r]}")
-    print("----------------------------")
+
 
 # 確認用
 # G_sub = nx.Graph()
@@ -124,5 +136,5 @@ for r in R:
 #                 G_sub.add_edge(r1,r2)
 # print(f"リンクを共有しているノードの集合：{list(G_sub.edges)}")
 
-nx.draw(G_R, node_color = [colorList[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
+nx.draw(G_R, node_color = [colorMap[wavelength] for wavelength in list(w_alloc.values())],with_labels=True)
 plt.show()
