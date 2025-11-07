@@ -92,22 +92,3 @@ for r in R:
     print(f"リクエスト{r}")
     print(f"パス：{path[r]}")
     print(f"使用する波長：{w_alloc[r]}")
-
-G_R = nx.Graph()
-G_R.add_nodes_from(list(R.keys()))
-# colorList = ['red', 'blue', 'yellow', 'green', 'purple', 'orange', 'magenta', 'lime', 'cyan', 'pink', 'navy', 'salmon']
-# colorMap = {}
-# for w in W:
-#     color = colorList.pop(0)
-#     colorMap[w] = color
-
-for r1 in R:
-    p1 = path[r1]
-    for r2 in R:
-        if r1 < r2:
-            p2 = path[r2]
-            if not p1.isdisjoint(p2):
-                G_R.add_edge(r1,r2)
-
-# nx.draw(G_R, node_color = [colorMap[w] for w in list(w_alloc.values())],with_labels=True)
-# plt.show()

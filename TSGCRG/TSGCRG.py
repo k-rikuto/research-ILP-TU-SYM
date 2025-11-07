@@ -1,9 +1,9 @@
 from gurobipy import Model,GRB
-from Routing import routing
-from Welch_Powell import WP
+from research.TSGCRG.Routing import routing
+from research.TSGCRG.Welch_Powell import WP
 import networkx as nx
 import matplotlib.pyplot as plt
-from odd_cycles import getCycles
+from research.TSGCRG.odd_cycles import getCycles
 import random
 
 # ネットワークを模した無向グラフG=(V,E)
