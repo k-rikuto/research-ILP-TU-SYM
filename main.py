@@ -2,6 +2,7 @@ import random
 from Network_Topology import getTopology
 from ILP_RCWA_01 import ILP_RCWA_01
 from ILP_RCWA_SLC_01 import ILP_RCWA_SLC_01
+from ILP_RCWA_02 import ILP_RCWA_02
 
 # ネットワークトポロジー1（ノード6リンク9）
 graph = getTopology(topology_number=1)
@@ -15,14 +16,15 @@ graph = getTopology(topology_number=1)
 
 # 実験回数、実験結果を保存する変数
 number_of_running = 5
-model = ["ILP_RCWA_01", "ILP_RCWA_SLC_01"]
+model = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_SLC_01"]
 results = {m:[] for m in model}
 
 V = set(graph.nodes)
-W = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}
+W_number = 30
+W = {i+1 for i in range(W_number)}
 C = {1, 2, 3, 4}
 R = {}
-R_number = 100
+R_number = 20
 
 for i in range(number_of_running):
     print(f"実行{i+1}回目")
@@ -42,4 +44,5 @@ for m in model:
     print("------------------------")
     print(f"モデル：{m}")
     for runtime,w_max in results[m]:
-        print(f"計算時間：{runtime} seconds / 波長の最大値：{w_max}")
+        print(f"計算時間：{runtime} seconds / 波長の使用数：{w_max}")
+    val = input("Push Entr to the next")
