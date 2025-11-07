@@ -3,6 +3,7 @@ from Network_Topology import getTopology
 from ILP_RCWA_01 import ILP_RCWA_01
 from ILP_RCWA_SLC_01 import ILP_RCWA_SLC_01
 from ILP_RCWA_02 import ILP_RCWA_02
+from ILP_RCWA_SLC_02 import ILP_RCWA_SLC_02
 
 # ネットワークトポロジー1（ノード6リンク9）
 graph = getTopology(topology_number=1)
@@ -16,7 +17,7 @@ graph = getTopology(topology_number=1)
 
 # 実験回数、実験結果を保存する変数
 number_of_running = 5
-model = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_SLC_01"]
+model = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02"]
 results = {m:[] for m in model}
 
 V = set(graph.nodes)
