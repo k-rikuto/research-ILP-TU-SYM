@@ -23,11 +23,11 @@ model = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "ILP_RC
 results = {m:[] for m in model}
 
 V = set(graph.nodes)
-W_number = 30
+W_number = 100
 W = {i+1 for i in range(W_number)}
 C = {1, 2, 3, 4}
 R = {}
-R_number = 60
+R_number = 80
 
 for i in range(number_of_running):
     print(f"実行{i+1}回目")
