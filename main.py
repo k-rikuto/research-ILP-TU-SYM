@@ -10,6 +10,17 @@ from ILP_RCWA_SLC_02 import ILP_RCWA_SLC_02
 from ILP_RCWA_SLC_03 import ILP_RCWA_SLC_03
 from Results_to_Excel import results_to_excel
 
+
+# 変更場所
+R_number = 60           # リクエストの数
+number_of_running = 50   # 実験回数
+
+# 実行確認
+# print(f"リクエストの数：{R_number}")
+# var = input("実行を続けますか？[Y/n]：")
+# if var == "Y":  pass
+# else:   return 0
+
 # ネットワークトポロジー1（ノード6リンク9）
 graph,topology_name = getTopology(topology_number=1)
 
@@ -18,10 +29,6 @@ graph,topology_name = getTopology(topology_number=1)
 
 # ネットワークトポロジー3（JPN12）
 # graph,topology_name = getTopology(topology_number=3)
-
-
-# 実験回数
-number_of_running = 50
 
 # モデル
 model = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03"]
@@ -36,25 +43,25 @@ results_runtime = {m:[] for m in model}
 results_wavelength = {m:[] for m in model}
 
 V = set(graph.nodes)
-W_number = 20
+W_number = 30
 W = {i+1 for i in range(W_number)}
 C = {1, 2, 3, 4}
 R = {}
-R_number = 20
 
-for i in tqdm(range(number_of_running)):
+
+for i in tqdm(range(number_of_running), leave=False):
     for r in range(1,R_number+1):
         # ノードの中から2つをランダムで選択する
         [src, dist] = random.sample(list(V), 2)
         R[r] = (src, dist)
 
-    for m in model:
+    for m in tqdm(model, leave=False):
         runtime,wavelength = eval(m)(graph=graph, R=R, W=W, C=C)
         results[m].append((runtime, wavelength))
         results_runtime[m].append(runtime)
         results_wavelength[m].append(wavelength)
 
-# 平均の計算
+# モデルごとに平均の計算
 for m in model:
     time_total = sum(results_runtime[m])
     time_average = time_total/len(results_runtime[m])
