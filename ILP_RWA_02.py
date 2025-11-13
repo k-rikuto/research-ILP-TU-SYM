@@ -2,7 +2,7 @@ import gurobipy as gp
 import networkx as nx
 
 # 引数：無向グラフgraph
-def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
+def ILP_RWA_02(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
     # parameter
     V = set(graph.nodes)
     E = set()   # 有向リンク集合E
@@ -17,14 +17,14 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
         # ノードu,vに入ってくるリンク集合
         E_outgoing[u].add((v,u))
         E_outgoing[v].add((u,v))
-    
+
     # ログを非表示にするための環境設定
     env = gp.Env(empty=True)
     env.setParam('OutputFlag', 0)
     env.start()
 
     # variable
-    model = gp.Model("ILP_RWA_01",env=env)
+    model = gp.Model("ILP_RWA_02",env=env)
     alpha = {}
     for r in R:
         for e in E:
@@ -33,7 +33,7 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
     beta = {}
     for w in W:
         beta[w] = model.addVar(vtype=gp.GRB.BINARY, name=f"wavelength{w} is used")
-    w_max = model.addVar(vtype=gp.GRB.INTEGER, name="maximum of wavelength")
+    
     model.update()
 
     # 流量保存制約
@@ -53,11 +53,7 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
             if v < u:
                 model.addConstr(gp.quicksum(alpha[r,e,w] for r in R)+gp.quicksum(alpha[r,e_reverse,w] for r in R)<=beta[w])
     
-    # w_maxの下限
-    for w in W:
-        model.addConstr(w*beta[w]<=w_max)
-    
-    model.setObjective(w_max, gp.GRB.MINIMIZE)
+    model.setObjective(gp.quicksum(w*beta[w] for w in W), gp.GRB.MINIMIZE)
     model.optimize()
 
     path = {r:set() for r in R}
@@ -69,5 +65,9 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
             w_alloc[r] = w
             if v > u:   path[r].add((u,v))
             else:   path[r].add(e)
+    
+    for w in W:
+        if beta[w].X > EPS:
+            w_max = w
 
-    return round(model.Runtime,2), w_max.X
+    return round(model.Runtime,2), float(w_max)

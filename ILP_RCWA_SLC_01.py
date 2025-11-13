@@ -8,17 +8,17 @@ def ILP_RCWA_SLC_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:se
     V = set(graph.nodes)
     E = set(graph.edges)
     E_DIR = set()   # 有向リンク集合E
-    E_incoming = {v:set() for v in V}
-    E_outgoing = {v:set() for v in V}
+    L_incoming = {v:set() for v in V}
+    L_outgoing = {v:set() for v in V}
     for u,v in list(graph.edges):
         # 有向リンク集合Eに要素を追加する。
         E_DIR |= {(u,v),(v,u)}
         # ノードu,vから出ていくリンク集合
-        E_incoming[u].add((u,v))
-        E_incoming[v].add((v,u))
+        L_incoming[u].add((u,v))
+        L_incoming[v].add((v,u))
         # ノードu,vに入ってくるリンク集合
-        E_outgoing[u].add((v,u))
-        E_outgoing[v].add((u,v))
+        L_outgoing[u].add((v,u))
+        L_outgoing[v].add((u,v))
 
     # ログを非表示にするための環境設定
     env = gp.Env(empty=True)
@@ -44,11 +44,11 @@ def ILP_RCWA_SLC_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:se
     # 流量保存制約
     for r in R:
         src,dest = R[r]
-        model.addConstr(gp.quicksum(alpha[r,e,w,c] for e in E_incoming[src] for w in W for c in C)-gp.quicksum(alpha[r,e,w,c] for e in E_outgoing[src] for w in W for c in C)==-1)
-        model.addConstr(gp.quicksum(alpha[r,e,w,c] for e in E_incoming[dest] for w in W for c in C)-gp.quicksum(alpha[r,e,w,c] for e in E_outgoing[dest] for w in W for c in C)==1)
+        model.addConstr(gp.quicksum(alpha[r,e,w,c] for e in L_incoming[src] for w in W for c in C)-gp.quicksum(alpha[r,e,w,c] for e in L_outgoing[src] for w in W for c in C)==-1)
+        model.addConstr(gp.quicksum(alpha[r,e,w,c] for e in L_incoming[dest] for w in W for c in C)-gp.quicksum(alpha[r,e,w,c] for e in L_outgoing[dest] for w in W for c in C)==1)
         for v in V-{src,dest}:
             for w in W:
-                model.addConstr(gp.quicksum(alpha[r,e,w,c] for e in E_incoming[v] for c in C)-gp.quicksum(alpha[r,e,w,c] for e in E_outgoing[v] for c in C)==0)
+                model.addConstr(gp.quicksum(alpha[r,e,w,c] for e in L_incoming[v] for c in C)-gp.quicksum(alpha[r,e,w,c] for e in L_outgoing[v] for c in C)==0)
     
     # 波長非重畳制約
     for e in E:
