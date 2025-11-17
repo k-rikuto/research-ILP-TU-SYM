@@ -1,7 +1,7 @@
-import random
+import random as rd
 from tqdm import tqdm
 
-from Network_Topology import getTopology
+from Network_Topology import get_topology
 from ILP_RCWA_01 import ILP_RCWA_01
 from ILP_RCWA_02 import ILP_RCWA_02
 from ILP_RCWA_03 import ILP_RCWA_03
@@ -22,7 +22,7 @@ MODEL_RWA = ["ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 def main():
     # 変更場所
     R_number = 100           # リクエストの数
-    number_of_running = 50   # 実験回数
+    number_of_running = 50   # 試行回数
     model = MODEL_RWA       # 検証で扱うモデル
 
     # 実行確認
@@ -34,13 +34,13 @@ def main():
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
-    graph,topology_name = getTopology(topology_number=1)
+    graph,topology_name = get_topology(topology_number=1)
 
     # ネットワークトポロジー2（ノード6メッシュ型）
-    # graph,topology_name = getTopology(topology_number=2)
+    # graph,topology_name = get_topology(topology_number=2)
 
     # ネットワークトポロジー3（JPN12）
-    # graph,topology_name = getTopology(topology_number=3)
+    # graph,topology_name = get_topology(topology_number=3)
 
 
     # モデルごとの結果
@@ -70,7 +70,7 @@ def main():
         # リクエストをR_numberの個数分、ランダムで生成する。
         for r in range(1,R_number+1):
             # ノードリストの中から2つをランダムで選択する
-            [src, dist] = random.sample(list(V), 2)
+            [src, dist] = rd.sample(list(V), 2)
             R[r] = (src, dist)
 
         for m in tqdm(model, leave=False):

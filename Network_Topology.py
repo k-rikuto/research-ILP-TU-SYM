@@ -1,7 +1,7 @@
 import networkx as nx
 from matplotlib import pyplot as plt
 
-def getTopology(topology_number):
+def get_topology(topology_number):
     graph = nx.Graph()
     topology_name = ''
 

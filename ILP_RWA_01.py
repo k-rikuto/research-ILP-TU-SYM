@@ -2,15 +2,16 @@ import gurobipy as gp
 import networkx as nx
 
 # 引数：無向グラフgraph
-def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
+def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=False):
     # parameter
     V = set(graph.nodes)
-    E = set()   # 有向リンク集合E
+    E = set(graph.edges)
+    E_DIR = set()   # 有向リンク集合E
     E_incoming = {v:set() for v in V}
     E_outgoing = {v:set() for v in V}
     for u,v in list(graph.edges):
         # 有向リンク集合Eに要素を追加する。
-        E |= {(u,v),(v,u)}
+        E_DIR |= {(u,v),(v,u)}
         # ノードu,vから出ていくリンク集合
         E_incoming[u].add((u,v))
         E_incoming[v].add((v,u))
@@ -27,7 +28,7 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
     model = gp.Model("ILP_RWA_01",env=env)
     alpha = {}
     for r in R:
-        for e in E:
+        for e in E_DIR:
             for w in W:
                 alpha[r,e,w] = model.addVar(vtype=gp.GRB.BINARY, name=f"request{r} use wavelength{w} in edge{e}")
     beta = {}
@@ -45,14 +46,20 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
             for w in W:
                 model.addConstr(gp.quicksum(alpha[r,e,w] for e in E_incoming[v])-gp.quicksum(alpha[r,e,w] for e in E_outgoing[v])==0)
     
+    # # 波長非重畳制約
+    # for e in E:
+    #     v,u = e
+    #     e_reverse = (u,v)
+    #     for w in W:
+    #         model.addConstr(gp.quicksum(alpha[r,e,w] for r in R)+gp.quicksum(alpha[r,e_reverse,w] for r in R)<=beta[w])
+        
     # 波長非重畳制約
     for e in E:
         v,u = e
         e_reverse = (u,v)
         for w in W:
-            if v < u:
-                model.addConstr(gp.quicksum(alpha[r,e,w] for r in R)+gp.quicksum(alpha[r,e_reverse,w] for r in R)<=beta[w])
-    
+            model.addConstr(gp.quicksum(alpha[r,e,w]+alpha[r,e_reverse,w] for r in R)<=beta[w])
+
     # w_maxの下限
     for w in W:
         model.addConstr(w*beta[w]<=w_max)
@@ -70,4 +77,8 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int]):
             if v > u:   path[r].add((u,v))
             else:   path[r].add(e)
 
-    return round(model.Runtime,2), w_max.X
+    if getPath:
+        return path, w_alloc
+    else:
+        return round(model.Runtime,2), w_max.X
+    

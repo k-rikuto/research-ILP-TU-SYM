@@ -41,7 +41,7 @@ SLCなし、完全単模性を保持せずに、対称性を完全に削除し�
 
 '''
 
-def ILP_RCWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int]):
+def ILP_RCWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int], getPath=False):
     ## parameter
     # ネットワークのノード集合V
     V = set(graph.nodes)
@@ -129,14 +129,15 @@ def ILP_RCWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
 
     path = {r:set() for r in R}
     w_alloc = {r:0 for r in R}
-    c_alloc = {r:set() for r in R}
     EPS = 1.e-6
     for r,e,w,c in alpha:
         v,u = e
         if alpha[r,e,w,c].X > EPS:
             w_alloc[r] = w
-            c_alloc[r].add(c)
-            if v > u:   path[r].add((u,v))
-            else:   path[r].add(e)
-
-    return round(model.Runtime,2), w_max.X
+            if v > u:   path[r].add((c,u,v))
+            else:   path[r].add((c,v,u))
+    
+    if getPath:
+        return path, w_alloc
+    else:
+        return round(model.Runtime,2), w_max.X

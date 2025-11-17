@@ -3,7 +3,7 @@ import networkx as nx
 import random
 
 # 引数：無向グラフgraph
-def ILP_RCWA_SLC_03(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int]):
+def ILP_RCWA_SLC_03(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int], getPath=False):
     # parameter
     V = set(graph.nodes)
     E = set(graph.edges)
@@ -78,7 +78,10 @@ def ILP_RCWA_SLC_03(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:se
         if beta[w].X > EPS:
             w_used += 1
 
-    return round(model.Runtime,2), float(w_used)
+    if getPath:
+        return path, w_alloc
+    else:
+        return round(model.Runtime,2), float(w_used)
 
-#. 50回実行する　← リクエストの始点と終点が変化する。
+#  50回実行する　← リクエストの始点と終点が変化する。
 #  ネットワークトポロジー　JPN12を使っても良いが、解が得られるかどうかわからない。
