@@ -12,16 +12,18 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
     for u,v in list(graph.edges):
         # 有向リンク集合Eに要素を追加する。
         E_DIR |= {(u,v),(v,u)}
-        # ノードu,vから出ていくリンク集合
-        E_incoming[u].add((u,v))
-        E_incoming[v].add((v,u))
         # ノードu,vに入ってくるリンク集合
-        E_outgoing[u].add((v,u))
-        E_outgoing[v].add((u,v))
+        E_incoming[u].add((v,u))
+        E_incoming[v].add((u,v))
+        # ノードu,vから出ていくリンク集合
+        E_outgoing[u].add((u,v))
+        E_outgoing[v].add((v,u))
     
     # ログを非表示にするための環境設定
     env = gp.Env(empty=True)
     env.setParam('OutputFlag', 0)
+    env.setParam('FeasibilityTol', 1e-9)   # デフォルト 1e-6 → これが主犯
+    env.setParam('NumericFocus', 3)
     env.start()
 
     # variable
@@ -46,19 +48,10 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
             for w in W:
                 model.addConstr(gp.quicksum(alpha[r,e,w] for e in E_incoming[v])-gp.quicksum(alpha[r,e,w] for e in E_outgoing[v])==0)
     
-    # # 波長非重畳制約
-    # for e in E:
-    #     v,u = e
-    #     e_reverse = (u,v)
-    #     for w in W:
-    #         model.addConstr(gp.quicksum(alpha[r,e,w] for r in R)+gp.quicksum(alpha[r,e_reverse,w] for r in R)<=beta[w])
-        
     # 波長非重畳制約
-    for e in E:
-        v,u = e
-        e_reverse = (u,v)
+    for u,v in E:
         for w in W:
-            model.addConstr(gp.quicksum(alpha[r,e,w]+alpha[r,e_reverse,w] for r in R)<=beta[w])
+            model.addConstr(gp.quicksum(alpha[r,(u,v),w] for r in R)+gp.quicksum(alpha[r,(v,u),w] for r in R)<=beta[w])
 
     # w_maxの下限
     for w in W:
@@ -67,14 +60,19 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
     model.setObjective(w_max, gp.GRB.MINIMIZE)
     model.optimize()
 
+    for r,e,w in alpha:
+        if alpha[r,e,w].X > 0.5:
+            print(f"[{r},{e},{w}]:{alpha[r,e,w].X}")
+
     path = {r:set() for r in R}
     w_alloc = {r:0 for r in R}
-    EPS = 1.e-6
+    EPS = 0.5
     for r,e,w in alpha:
-        v,u = e
+        (v,u) = e
+        e_reverse = (u,v)
         if alpha[r,e,w].X > EPS:
             w_alloc[r] = w
-            if v > u:   path[r].add((u,v))
+            if v > u:   path[r].add(e_reverse)
             else:   path[r].add(e)
 
     if getPath:

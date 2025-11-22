@@ -56,6 +56,9 @@ def ILP_RWA_03(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
     
     model.setObjective(gp.quicksum(beta[w] for w in W), gp.GRB.MINIMIZE)
     model.optimize()
+    for r,e,w in alpha:
+        if alpha[r,e,w].X > 0.5:
+            print(f"[{r},{e},{w}]:{alpha[r,e,w].X}")
 
     path = {r:set() for r in R}
     w_alloc = {r:0 for r in R}

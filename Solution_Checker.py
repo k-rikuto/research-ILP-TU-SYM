@@ -78,7 +78,7 @@ def check_solution():
 
     ## リクエスト1~10のパスと波長を表示する
     print("実行結果")
-    for r in range(1,11):
+    for r in R:
         print('----------------------------')
         print(f"リクエスト{r}")
         print(f"(src,dest)={R[r]}")
@@ -172,4 +172,4 @@ def check_error_rate():
     print(f"誤答率(%):{error_rate}")
 
 
-check_error_rate()
+check_solution()
