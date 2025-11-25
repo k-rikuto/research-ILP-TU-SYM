@@ -22,8 +22,6 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
     # ログを非表示にするための環境設定
     env = gp.Env(empty=True)
     env.setParam('OutputFlag', 0)
-    env.setParam('FeasibilityTol', 1e-9)   # デフォルト 1e-6 → これが主犯
-    env.setParam('NumericFocus', 3)
     env.start()
 
     # variable
@@ -37,6 +35,7 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
     for w in W:
         beta[w] = model.addVar(vtype=gp.GRB.BINARY, name=f"wavelength{w} is used")
     w_max = model.addVar(vtype=gp.GRB.INTEGER, name="maximum of wavelength")
+
     model.update()
 
     # 流量保存制約
@@ -56,24 +55,22 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
     # w_maxの下限
     for w in W:
         model.addConstr(w*beta[w]<=w_max)
+
+
     
     model.setObjective(w_max, gp.GRB.MINIMIZE)
     model.optimize()
 
-    for r,e,w in alpha:
-        if alpha[r,e,w].X > 0.5:
-            print(f"[{r},{e},{w}]:{alpha[r,e,w].X}")
-
     path = {r:set() for r in R}
-    w_alloc = {r:0 for r in R}
+    w_alloc = {r:set() for r in R}
     EPS = 0.5
     for r,e,w in alpha:
         (v,u) = e
         e_reverse = (u,v)
         if alpha[r,e,w].X > EPS:
-            w_alloc[r] = w
-            if v > u:   path[r].add(e_reverse)
-            else:   path[r].add(e)
+            w_alloc[r].add(w)
+            if v > u:   path[r].add((w, e_reverse))
+            else:   path[r].add((w,e))
 
     if getPath:
         return path, w_alloc

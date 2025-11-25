@@ -48,7 +48,7 @@ def ILP_RWA_02(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
     
     # 波長非重畳制約
     for e in E:
-        v,u = e
+        (v,u) = e
         e_reverse = (u,v)
         for w in W:
             model.addConstr(gp.quicksum(alpha[r,e,w] for r in R)+gp.quicksum(alpha[r,e_reverse,w] for r in R)<=beta[w])
@@ -56,19 +56,17 @@ def ILP_RWA_02(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=F
     model.setObjective(gp.quicksum(w*beta[w] for w in W), gp.GRB.MINIMIZE)
     model.optimize()
 
-    for r,e,w in alpha:
-        if alpha[r,e,w].X > 0.5:
-            print(f"[{r},{e},{w}]:{alpha[r,e,w].X}")
 
     path = {r:set() for r in R}
-    w_alloc = {r:0 for r in R}
-    EPS = 1.e-6
+    w_alloc = {r:set() for r in R}
+    EPS = 0.5
     for r,e,w in alpha:
-        v,u = e
+        (v,u) = e
+        e_reverse = (u,v)
         if alpha[r,e,w].X > EPS:
-            w_alloc[r] = w
-            if v > u:   path[r].add((u,v))
-            else:   path[r].add(e)
+            w_alloc[r].add(w)
+            if v > u:   path[r].add((w, e_reverse))
+            else:   path[r].add((w,e))
     
     for w in W:
         if beta[w].X > EPS:

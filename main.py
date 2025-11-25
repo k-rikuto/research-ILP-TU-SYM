@@ -20,28 +20,30 @@ MODEL_RCWA = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "I
 MODEL_RWA = ["ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 
 def main():
-    # 変更場所
-    R_number = 100           # リクエストの数
-    number_of_running = 50   # 試行回数
-    model = MODEL_RWA       # 検証で扱うモデル
-
-    # 実行確認
-    # 変更が反映されてない状態で実行してしまうのを防ぐために確認する
-    print(f"リクエストの数：{R_number}")
-    var = input("実行を続けますか？[Y/n]：")
-    if var == "Y":  pass
-    else:   return
+    ## 変更場所
+    R_number = 80           # リクエストの数
+    number_of_running = 10   # 試行回数
+    model = MODEL_RCWA       # 検証で扱うモデル
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
-    graph,topology_name = get_topology(topology_number=1)
+    # graph,topology_name = get_topology(topology_number=1)
 
     # ネットワークトポロジー2（ノード6メッシュ型）
     # graph,topology_name = get_topology(topology_number=2)
 
     # ネットワークトポロジー3（JPN12）
-    # graph,topology_name = get_topology(topology_number=3)
+    graph,topology_name = get_topology(topology_number=3)
 
+    # 実行確認
+    # 変更が反映されてない状態で実行してしまうのを防ぐために確認する
+    print(f"リクエストの数：{R_number}")
+    print(f"モデル：{model}")
+    print(f"実行回数：{number_of_running}")
+    print(f"ネットワークトポロジー：{topology_name}")
+    var = input("実行を続けますか？[Y/n]：")
+    if var == "Y":  pass
+    else:   return
 
     # モデルごとの結果
     results = {m:[] for m in model}

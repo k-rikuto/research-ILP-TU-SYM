@@ -103,7 +103,7 @@ def ILP_RCWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
     
     # 波長非重畳制約（betaの下限）
     for e in E:
-        v,u = e
+        (v,u) = e
         e_reverse = (u,v)
         for w in W:
             for c in C:
@@ -128,14 +128,15 @@ def ILP_RCWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
     model.optimize()
 
     path = {r:set() for r in R}
-    w_alloc = {r:0 for r in R}
-    EPS = 1.e-6
+    w_alloc = {r:set() for r in R}
+    EPS = 0.5
     for r,e,w,c in alpha:
-        v,u = e
+        (v,u) = e
+        e_reverse = (u,v)
         if alpha[r,e,w,c].X > EPS:
-            w_alloc[r] = w
-            if v > u:   path[r].add((c,u,v))
-            else:   path[r].add((c,v,u))
+            w_alloc[r].add(w)
+            if v > u:   path[r].add((c,w,e_reverse))
+            else:   path[r].add((c,w,e))
     
     if getPath:
         return path, w_alloc

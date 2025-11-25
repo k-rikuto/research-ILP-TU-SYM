@@ -27,18 +27,18 @@ MODEL_RWA = ["ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 '''
 def check_solution():
     # 変更場所
-    R_number = 60          # リクエストの数
-    model = MODEL_RWA[0]       # 検証で扱うモデル
+    R_number = 80          # リクエストの数
+    model = MODEL_RCWA[0]       # 検証で扱うモデル
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
-    graph,topology_name = get_topology(topology_number=1)
+    # graph,topology_name = get_topology(topology_number=1)
 
     # ネットワークトポロジー2（ノード6メッシュ型）
     # graph,topology_name = get_topology(topology_number=2)
 
     # ネットワークトポロジー3（JPN12）
-    # graph,topology_name = get_topology(topology_number=3)
+    graph,topology_name = get_topology(topology_number=3)
 
     # 実験環境の表示
     print('<実験情報>')
@@ -91,7 +91,7 @@ def check_solution():
     for r1 in set(R.keys()):
         R_visited.add(r1)
         for r2 in set(R.keys())-R_visited:
-            if w_alloc[r1]==w_alloc[r2] and not path[r1].isdisjoint(path[r2]):
+            if not path[r1].isdisjoint(path[r2]):
                 print('---------------------------------------')
                 print(f"({r1}, {r2}) is unacceptable pare.")
                 print(f"リクエスト{r1}")
@@ -108,9 +108,9 @@ def check_error_rate():
     # リクエストの数
     R_number = 40
     # 試行回数
-    number_of_running = 50
+    number_of_running = 20
     # モデル
-    model = MODEL_RWA[0]
+    model = MODEL_RCWA[0]
     # ネットワークトポロジー
     graph,topology_name = get_topology(topology_number=1)
     # 誤答回数のカウンター
@@ -160,7 +160,7 @@ def check_error_rate():
         for r1 in set(R.keys()):
             R_visited.add(r1)
             for r2 in set(R.keys())-R_visited:
-                if w_alloc[r1]==w_alloc[r2] and not path[r1].isdisjoint(path[r2]):
+                if not path[r1].isdisjoint(path[r2]):
                     error_flag = True
                     break
             if error_flag:
