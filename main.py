@@ -19,11 +19,14 @@ MODEL_RCWA = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "I
 # RWAモデル
 MODEL_RWA = ["ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 
+# 全てのモデル
+MODEL_ALL = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03", "ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
+
 def main():
     ## 変更場所
-    R_number = 80           # リクエストの数
+    R_number = 20           # リクエストの数
     number_of_running = 10   # 試行回数
-    model = MODEL_RCWA       # 検証で扱うモデル
+    model = MODEL_ALL       # 検証で扱うモデル
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
@@ -33,7 +36,10 @@ def main():
     # graph,topology_name = get_topology(topology_number=2)
 
     # ネットワークトポロジー3（JPN12）
-    graph,topology_name = get_topology(topology_number=3)
+    # graph,topology_name = get_topology(topology_number=3)
+
+    # ネットワークトポロジー4（European Backbone Network, EBN）
+    graph,topology_name = get_topology(topology_number=4)
 
     # 実行確認
     # 変更が反映されてない状態で実行してしまうのを防ぐために確認する
@@ -75,11 +81,8 @@ def main():
             [src, dist] = rd.sample(list(V), 2)
             R[r] = (src, dist)
 
-        for m in tqdm(model, leave=False):
-            if model == MODEL_RCWA:
-                runtime,wavelength = eval(m)(graph=graph, R=R, W=W, C=C)
-            else:
-                runtime,wavelength = eval(m)(graph=graph, R=R, W=W)
+        for m in tqdm(model, leave=False):      
+            runtime,wavelength = eval(m)(graph=graph, R=R, W=W, C=C)
             results[m].append((runtime, wavelength))
             results_runtime[m].append(runtime)
             results_wavelength[m].append(wavelength)
@@ -92,10 +95,7 @@ def main():
         w_average = w_total/len(results_wavelength[m])
         results[m].append((time_average,w_average))
     
-    if model == MODEL_RCWA:
-        results_to_excel(results=results, number_of_runnning=number_of_running, topology_name=topology_name, R_number=R_number)
-    else:
-        results_to_excel(results=results, number_of_runnning=number_of_running, topology_name=topology_name, R_number=R_number, isRWA=True)
+    results_to_excel(results=results, number_of_runnning=number_of_running, topology_name=topology_name, R_number=R_number)
 
     return
 

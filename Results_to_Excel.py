@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def results_to_excel(results:dict[str, list[tuple[float, float]]], number_of_runnning:int, topology_name:str, R_number:int, isRWA=False):
+def results_to_excel(results:dict[str, list[tuple[float, float]]], number_of_runnning:int, topology_name:str, R_number:int):
 
     runtime_data = []
     wavelength_data = []
@@ -26,12 +26,6 @@ def results_to_excel(results:dict[str, list[tuple[float, float]]], number_of_run
     wavelength_df = pd.DataFrame(wavelength_data, index=time_list, columns=model_list)
 
     # Excelに書き込み
-
-    if isRWA:
-        with pd.ExcelWriter(f'results/RWA/{topology_name}/results_request_{R_number}.xlsx') as writer:
-            runtime_df.to_excel(writer, sheet_name='runtime')
-            wavelength_df.to_excel(writer, sheet_name='wavelength')
-    else:
-        with pd.ExcelWriter(f'results/{topology_name}/results_request_{R_number}.xlsx') as writer:
-            runtime_df.to_excel(writer, sheet_name='runtime')
-            wavelength_df.to_excel(writer, sheet_name='wavelength')
+    with pd.ExcelWriter(f'results/{topology_name}/results_request_{R_number}.xlsx') as writer:
+        runtime_df.to_excel(writer, sheet_name='runtime')
+        wavelength_df.to_excel(writer, sheet_name='wavelength')

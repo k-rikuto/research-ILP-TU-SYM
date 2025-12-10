@@ -2,7 +2,7 @@ import gurobipy as gp
 import networkx as nx
 
 # 引数：無向グラフgraph
-def ILP_RWA_02(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], getPath=False):
+def ILP_RWA_02(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int]=[], getPath=False):
     # parameter
     V = set(graph.nodes)
     E = set(graph.edges)

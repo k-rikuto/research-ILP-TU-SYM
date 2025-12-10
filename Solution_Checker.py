@@ -27,18 +27,18 @@ MODEL_RWA = ["ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 '''
 def check_solution():
     # 変更場所
-    R_number = 80          # リクエストの数
-    model = MODEL_RCWA[0]       # 検証で扱うモデル
+    R_number = 100          # リクエストの数
+    model = MODEL_RCWA[3]       # 検証で扱うモデル
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
-    # graph,topology_name = get_topology(topology_number=1)
+    graph,topology_name = get_topology(topology_number=1)
 
     # ネットワークトポロジー2（ノード6メッシュ型）
     # graph,topology_name = get_topology(topology_number=2)
 
-    # ネットワークトポロジー3（JPN12）
-    graph,topology_name = get_topology(topology_number=3)
+    # # ネットワークトポロジー3（JPN12）
+    # graph,topology_name = get_topology(topology_number=3)
 
     # 実験環境の表示
     print('<実験情報>')
@@ -77,13 +77,13 @@ def check_solution():
         path,w_alloc = eval(model)(graph=graph, R=R, W=W, getPath=True)
 
     ## リクエスト1~10のパスと波長を表示する
-    print("実行結果")
-    for r in R:
-        print('----------------------------')
-        print(f"リクエスト{r}")
-        print(f"(src,dest)={R[r]}")
-        print(f"コアとリンク：{path[r]}")
-        print(f"波長：{w_alloc[r]}")
+    # print("実行結果")
+    # for r in R:
+    #     print('----------------------------')
+    #     print(f"リクエスト{r}")
+    #     print(f"(src,dest)={R[r]}")
+    #     print(f"コアとリンク：{path[r]}")
+    #     print(f"波長：{w_alloc[r]}")
     
 
     ## 同一のリンクを使いながら波長が重なっているペアが存在するかを確認する
