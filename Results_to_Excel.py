@@ -1,5 +1,5 @@
 import pandas as pd
-
+import os
 
 def results_to_excel(results:dict[str, list[tuple[float, float]]], number_of_runnning:int, topology_name:str, R_number:int):
 
@@ -25,7 +25,16 @@ def results_to_excel(results:dict[str, list[tuple[float, float]]], number_of_run
     runtime_df = pd.DataFrame(runtime_data, index=time_list, columns=model_list)
     wavelength_df = pd.DataFrame(wavelength_data, index=time_list, columns=model_list)
 
+    # ディレクトリがない場合、生成
+    dir = f"./results/{topology_name}/"
+    if not os.path.exists(dir):
+        if not os.path.exists("./results"):
+            os.mkdir("./results")
+            os.mkdir(dir)
+        else:
+            os.mkdir(dir)
+
     # Excelに書き込み
-    with pd.ExcelWriter(f'results/{topology_name}/results_request_{R_number}.xlsx') as writer:
+    with pd.ExcelWriter(dir+f"results_request_{R_number}.xlsx") as writer:
         runtime_df.to_excel(writer, sheet_name='runtime')
         wavelength_df.to_excel(writer, sheet_name='wavelength')
