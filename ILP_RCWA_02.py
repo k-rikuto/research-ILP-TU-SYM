@@ -80,9 +80,8 @@ def ILP_RCWA_02(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
     if restart:
         print("再開")
         # 過去の記録を取り込む
-        # model = gp.read("./save/model.mps",env=env)
-        # model.read("./save/state.mst")
-        model = gp.read("./save/model.sav")
+        model = gp.read("./save/model.mps",env=env)
+        model.read("./save/state.mst")
 
         alpha = {}
         for r in R:
