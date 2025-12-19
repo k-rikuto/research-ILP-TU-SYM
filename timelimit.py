@@ -8,10 +8,10 @@ from ILP_RCWA_SLC_03 import ILP_RCWA_SLC_03
 from ILP_RWA_01 import ILP_RWA_01
 from ILP_RWA_02 import ILP_RWA_02
 from ILP_RWA_03 import ILP_RWA_03
+from empty_save import empty_save
 
 import random as rd
 import os
-import shutil
 import pickle
 
 # RCWAモデル
@@ -23,13 +23,13 @@ MODEL_RWA = ["ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 def timelimit():
 
     ## 変更場所
-    R_number = 20   # リクエストの数
+    R_number = 60   # リクエストの数
     model = MODEL_RCWA[0]       # 検証で扱うモデル
-    timelimit = 10
+    timelimit = 50
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
-    # graph,topology_name = get_topology(topology_number=1)
+    graph,topology_name = get_topology(topology_number=1)
 
     # ネットワークトポロジー2（ノード6メッシュ型）
     # graph,topology_name = get_topology(topology_number=2)
@@ -38,7 +38,7 @@ def timelimit():
     # graph,topology_name = get_topology(topology_number=3)
 
     # ネットワークトポロジー4（European Backbone Network, EBN）
-    graph,topology_name = get_topology(topology_number=4)
+    # graph,topology_name = get_topology(topology_number=4)
 
     if os.path.exists("./save/model_detail.txt"):
         print("モデルの再開")
@@ -61,7 +61,7 @@ def timelimit():
         R = data["R"]
         W = data["W"]
         C = data["C"]
-        isOptimal,runtime,wavelength = eval(model)(graph=graph, R=R, W=W, C=C, timelimit=timelimit)
+        isOptimal,runtime,wavelength = eval(model)(graph=graph, R=R, W=W, C=C, timelimit=timelimit, restart=True)
 
     else:
         # 実験に使用するネットワークトポロジーを選択する
@@ -107,9 +107,7 @@ def timelimit():
         print(f"計算時間：{runtime}")
         print(f"波長の数：{wavelength}")
         # 保存したファイルを削除
-        if os.path.exists("./save"):
-            shutil.rmtree("./save")
-            os.mkdir("./save")
+        empty_save()
     else:
         print('タイムアウトで終了')
 

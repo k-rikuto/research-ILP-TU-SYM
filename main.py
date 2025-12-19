@@ -26,11 +26,11 @@ def main():
     ## 変更場所
     R_number = 20           # リクエストの数
     number_of_running = 10   # 試行回数
-    model = MODEL_ALL       # 検証で扱うモデル
+    model = MODEL_RCWA       # 検証で扱うモデル
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
-    # graph,topology_name = get_topology(topology_number=1)
+    graph,topology_name = get_topology(topology_number=1)
 
     # ネットワークトポロジー2（ノード6メッシュ型）
     # graph,topology_name = get_topology(topology_number=2)
@@ -38,8 +38,8 @@ def main():
     # ネットワークトポロジー3（JPN12）
     # graph,topology_name = get_topology(topology_number=3)
 
-    # ネットワークトポロジー4（European Backbone Network, EBN）
-    graph,topology_name = get_topology(topology_number=4)
+    # # ネットワークトポロジー4（European Backbone Network, EBN）
+    # graph,topology_name = get_topology(topology_number=4)
 
     # 実行確認
     # 変更が反映されてない状態で実行してしまうのを防ぐために確認する
@@ -82,7 +82,7 @@ def main():
             R[r] = (src, dist)
 
         for m in tqdm(model, leave=False):      
-            runtime,wavelength = eval(m)(graph=graph, R=R, W=W, C=C)
+            isOptimal,runtime,wavelength = eval(m)(graph=graph, R=R, W=W, C=C)
             results[m].append((runtime, wavelength))
             results_runtime[m].append(runtime)
             results_wavelength[m].append(wavelength)
