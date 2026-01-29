@@ -1,9 +1,15 @@
 import networkx as nx
 from matplotlib import pyplot as plt
 
-def get_topology(topology_number):
+def get_topology(topology_number:int):
     graph = nx.Graph()
     topology_name = ''
+
+    # ネットワークトポロジー0（データ構造を調べるための超簡易ネットワーク）
+    if topology_number == 0:
+        graph.add_nodes_from([1, 2, 3, 4])
+        graph.add_edges_from([(1,2), (2,3), (2,4), (3,4)])
+        topology_name = 'Network_Topology_00'
 
     # ネットワークトポロジー1（ノード6リンク9）
     if topology_number == 1:

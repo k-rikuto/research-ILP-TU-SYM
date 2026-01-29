@@ -65,11 +65,11 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int
         # 有向リンク集合Eに要素を追加する。
         E_DIR |= {(u,v),(v,u)}
         # ノードu,vから出ていくリンク集合
-        L_incoming[u].add((u,v))
-        L_incoming[v].add((v,u))
+        L_outgoing[u].add((u,v))
+        L_outgoing[v].add((v,u))
         # ノードu,vに入ってくるリンク集合
-        L_outgoing[u].add((v,u))
-        L_outgoing[v].add((u,v))
+        L_incoming[u].add((v,u))
+        L_incoming[v].add((u,v))
 
     # 実行時間の初期化
     runtime = 0

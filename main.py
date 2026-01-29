@@ -1,5 +1,6 @@
 import random as rd
 from tqdm import tqdm
+import gurobipy as gp
 
 from Network_Topology import get_topology
 from ILP_RCWA_01 import ILP_RCWA_01
@@ -98,7 +99,6 @@ def main():
     results_to_excel(results=results, number_of_runnning=number_of_running, topology_name=topology_name, R_number=R_number)
 
     return
-
 
 
 main()
