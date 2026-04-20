@@ -9,6 +9,7 @@ from ILP_RCWA_03 import ILP_RCWA_03
 from ILP_RCWA_SLC_01 import ILP_RCWA_SLC_01
 from ILP_RCWA_SLC_02 import ILP_RCWA_SLC_02
 from ILP_RCWA_SLC_03 import ILP_RCWA_SLC_03
+from ILP_RCWA_SLC_04 import ILP_RCWA_SLC_04
 from ILP_RWA_01 import ILP_RWA_01
 from ILP_RWA_02 import ILP_RWA_02
 from ILP_RWA_03 import ILP_RWA_03
@@ -23,11 +24,14 @@ MODEL_RWA = ["ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 # 全てのモデル
 MODEL_ALL = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03", "ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 
+# 別のモデル
+MODEL_NEW = ["ILP_RCWA_SLC_01", "ILP_RCWA_SLC_03", "ILP_RCWA_SLC_04"]
+
 def main():
     ## 変更場所
-    R_number = 20           # リクエストの数
-    number_of_running = 10   # 試行回数
-    model = MODEL_RCWA       # 検証で扱うモデル
+    R_number = 120           # リクエストの数
+    number_of_running = 50   # 試行回数
+    model = MODEL_NEW       # 検証で扱うモデル
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
@@ -100,5 +104,49 @@ def main():
 
     return
 
+# def test():
+#     ## 変更場所
+#     R_number = 100           # リクエストの数
+
+#     # 実験に使用するネットワークトポロジーを選択する
+#     # ネットワークトポロジー1（ノード6リンク9）
+#     graph,topology_name = get_topology(topology_number=1)
+
+#     # ネットワークトポロジー2（ノード6メッシュ型）
+#     # graph,topology_name = get_topology(topology_number=2)
+
+#     # ネットワークトポロジー3（JPN12）
+#     # graph,topology_name = get_topology(topology_number=3)
+
+#     # # ネットワークトポロジー4（European Backbone Network, EBN）
+#     # graph,topology_name = get_topology(topology_number=4)
+
+#     # 実行確認
+#     # 変更が反映されてない状態で実行してしまうのを防ぐために確認する
+#     print(f"リクエストの数：{R_number}")
+#     print(f"ネットワークトポロジー：{topology_name}")
+#     var = input("実行を続けますか？[Y/n]：")
+#     if var == "Y":  pass
+#     else:   return
+
+#     # ノード集合からリクエストを生成するため
+#     V = set(graph.nodes)
+
+#     # 波長
+#     W_number = 30
+#     W = {i+1 for i in range(W_number)}
+
+#     # コアの集合
+#     C = {1, 2, 3, 4}
+
+#     # リクエストの集合
+#     R = {}
+
+#     for r in range(1,R_number+1):
+#         # ノードリストの中から2つをランダムで選択する
+#         [src, dist] = rd.sample(list(V), 2)
+#         R[r] = (src, dist)
+    
+#     isOptimal, runtime, wavelength, path, w_alloc = ILP_RCWA_SLC_04(graph=graph,R=R,W=W,C=C,getPath=True)
 
 main()
