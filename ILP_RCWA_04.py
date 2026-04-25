@@ -39,7 +39,7 @@ SLCなし、完全単模性を保持せずに、対称性を完全に削除し�
 
 '''
 
-def ILP_RCWA_03(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int], timelimit=0, getPath=False, restart=False):
+def ILP_RCWA_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int], timelimit=0, getPath=False, restart=False):
 
     if timelimit == 0:
         # ログを非表示にするための環境設定
@@ -154,7 +154,7 @@ def ILP_RCWA_03(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
         # beta_wの順序関係
         for w in W:
             if w+1 in W:
-                model.addConstr(beta[w]>=beta[w+1])
+                model.addConstr(beta[w]-beta[w+1]>=0)
         
         model.setObjective(gp.quicksum(beta[w] for w in W), gp.GRB.MINIMIZE)
         model.update()

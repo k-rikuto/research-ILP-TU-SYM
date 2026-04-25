@@ -1,11 +1,13 @@
 import random as rd
 from tqdm import tqdm
 import gurobipy as gp
+import os
 
 from Network_Topology import get_topology
 from ILP_RCWA_01 import ILP_RCWA_01
 from ILP_RCWA_02 import ILP_RCWA_02
 from ILP_RCWA_03 import ILP_RCWA_03
+from ILP_RCWA_04 import ILP_RCWA_04
 from ILP_RCWA_SLC_01 import ILP_RCWA_SLC_01
 from ILP_RCWA_SLC_02 import ILP_RCWA_SLC_02
 from ILP_RCWA_SLC_03 import ILP_RCWA_SLC_03
@@ -14,6 +16,7 @@ from ILP_RWA_01 import ILP_RWA_01
 from ILP_RWA_02 import ILP_RWA_02
 from ILP_RWA_03 import ILP_RWA_03
 from Results_to_Excel import results_to_excel
+from Analyze_Request import analyze_request
 
 # RCWAモデル
 MODEL_RCWA = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03"]
@@ -24,14 +27,15 @@ MODEL_RWA = ["ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 # 全てのモデル
 MODEL_ALL = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03", "ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
 
-# 別のモデル
-MODEL_NEW = ["ILP_RCWA_SLC_01", "ILP_RCWA_SLC_03", "ILP_RCWA_SLC_04"]
+# 対称性のモデル
+MODELL_SYMMETRY = ["ILP_RCWA_01", "ILP_RCWA_04", "ILP_RCWA_SLC_01", "ILP_RCWA_SLC_04"]
 
 def main():
     ## 変更場所
-    R_number = 120           # リクエストの数
-    number_of_running = 50   # 試行回数
-    model = MODEL_NEW       # 検証で扱うモデル
+    R_number = 20           # リクエストの数
+    number_of_running = 5   # 試行回数
+    model = MODELL_SYMMETRY       # 検証で扱うモデル
+    request_log = True
 
     # 実験に使用するネットワークトポロジーを選択する
     # ネットワークトポロジー1（ノード6リンク9）
@@ -78,6 +82,8 @@ def main():
     # リクエストの集合
     R = {}
 
+    R_list_list = []
+
 
     for i in tqdm(range(number_of_running), leave=False):
         # リクエストをR_numberの個数分、ランダムで生成する。
@@ -85,6 +91,9 @@ def main():
             # ノードリストの中から2つをランダムで選択する
             [src, dist] = rd.sample(list(V), 2)
             R[r] = (src, dist)
+
+        if request_log: R_list_list.append(list(R.values()))
+
 
         for m in tqdm(model, leave=False):      
             isOptimal,runtime,wavelength = eval(m)(graph=graph, R=R, W=W, C=C)
@@ -100,8 +109,19 @@ def main():
         w_average = w_total/len(results_wavelength[m])
         results[m].append((time_average,w_average))
     
-    results_to_excel(results=results, number_of_runnning=number_of_running, topology_name=topology_name, R_number=R_number)
-
+    
+    # ディレクトリがない場合、生成
+    dir = f"./results/{topology_name}/"
+    if not os.path.exists(dir):
+        if not os.path.exists("./results"):
+            os.mkdir("./results")
+            os.mkdir(dir)
+        else:
+            os.mkdir(dir)
+    
+    file = dir + f"results_request_{R_number}.xlsx"
+    results_to_excel(results=results, number_of_runnning=number_of_running, topology_name=topology_name, R_number=R_number, file=file)
+    if request_log: analyze_request(R_list_list=R_list_list, V=V, file=file)
     return
 
 # def test():
@@ -149,4 +169,6 @@ def main():
     
 #     isOptimal, runtime, wavelength, path, w_alloc = ILP_RCWA_SLC_04(graph=graph,R=R,W=W,C=C,getPath=True)
 
-main()
+
+if __name__ == "__main__":
+    main()

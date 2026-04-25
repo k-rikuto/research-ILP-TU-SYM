@@ -136,7 +136,7 @@ def ILP_RCWA_SLC_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:se
         # beta_wの順序関係
         for w in W:
             if w+1 in W:
-                model.addConstr(beta[w]>=beta[w+1])
+                model.addConstr(beta[w]-beta[w+1]>=0)
         
         model.setObjective(gp.quicksum(beta[w] for w in W), gp.GRB.MINIMIZE)
         model.update()
