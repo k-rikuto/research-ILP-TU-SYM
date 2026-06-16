@@ -31,14 +31,13 @@ MODEL_ALL = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_SLC_01", "IL
 MODEL_SYMMETRY = ["ILP_RCWA_01", "ILP_RCWA_04", "ILP_RCWA_SLC_01", "ILP_RCWA_SLC_04"]
 
 # model04を含めたすべてのモデル
-MODEL = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_04","ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03", "ILP_RCWA_SLC_04","ILP_RWA_01", "ILP_RWA_02", "ILP_RWA_03"]
+MODEL = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_04","ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03", "ILP_RCWA_SLC_04"]
 
-def main():
+def request_sequence():
     ## 変更場所
-    R_number = 10           # リクエストの数
-    number_of_running = 1   # 試行回数
+    R_number = 100           # リクエストの数
+    number_of_running = 20   # 試行回数
     model = MODEL       # 検証で扱うモデル
-    request_log_flag = False
 
 
     # 実験に使用するネットワークトポロジーを選択する
@@ -67,12 +66,7 @@ def main():
 
     # モデルごとの結果
     results = {m:[] for m in model}
-
-    # モデルごとのruntime結果
-    results_runtime = {m:[] for m in model}
-
-    # モデルごとのwavelength結果
-    results_wavelength = {m:[] for m in model}
+    results_nonseq = {m:[] for m in model}
 
     # ノード集合からリクエストを生成するため
     V = set(graph.nodes)
@@ -86,8 +80,15 @@ def main():
 
     # リクエストの集合
     R = {}
+    R_nonseq = {}
 
-    R_list_list = []
+    # モデルごとのruntime結果
+    results_runtime = {m:[] for m in model}
+    results_nonseq_runtime = {m:[] for m in model}
+
+    # モデルごとのwavelength結果
+    results_wavelength = {m:[] for m in model}
+    results_nonseq_wavelength = {m:[] for m in model}
 
 
     for i in tqdm(range(number_of_running), leave=False):
@@ -96,23 +97,38 @@ def main():
             # ノードリストの中から2つをランダムで選択する
             [src, dist] = rd.sample(list(V), 2)
             R[r] = (src, dist)
+            if src < dist: R_nonseq[r] = (src, dist)
+            else: R_nonseq[r] = (dist, src)
 
-        if request_log_flag: R_list_list.append(list(R.values()))
-
-
-        for m in tqdm(model, leave=False):      
+        for m in tqdm(model, leave=False):
+            # R
             isOptimal,runtime,wavelength = eval(m)(graph=graph, R=R, W=W, C=C)
             results[m].append((runtime, wavelength))
             results_runtime[m].append(runtime)
             results_wavelength[m].append(wavelength)
+            # R_nonseq
+            isOptimal,runtime,wavelength = eval(m)(graph=graph, R=R_nonseq, W=W, C=C)
+            results_nonseq[m].append((runtime, wavelength))
+            results_nonseq_runtime[m].append(runtime)
+            results_nonseq_wavelength[m].append(wavelength)
+    
 
     # モデルごとに平均の計算
     for m in model:
+        # R
         time_total = sum(results_runtime[m])
         time_average = time_total/len(results_runtime[m])
         w_total = sum(results_wavelength[m])
         w_average = w_total/len(results_wavelength[m])
         results[m].append((time_average,w_average))
+
+        #R_nonseq
+        time_total = sum(results_nonseq_runtime[m])
+        time_average = time_total/len(results_nonseq_runtime[m])
+        w_total = sum(results_nonseq_wavelength[m])
+        w_average = w_total/len(results_nonseq_wavelength[m])
+        results_nonseq[m].append((time_average,w_average))
+
     
     
     # ディレクトリがない場合、生成
@@ -126,10 +142,12 @@ def main():
     
     file = dir + f"results_request_{R_number}.xlsx"
     results_to_excel(results=results, number_of_runnning=number_of_running, file=file)
-    if request_log_flag: analyze_request(R_list_list=R_list_list, V=V, file=file)
+    file = dir + f"results_request_nonseq_{R_number}.xlsx"
+    results_to_excel(results=results_nonseq, number_of_runnning=number_of_running, file=file)
+
     return
 
 
 
 if __name__ == "__main__":
-    main()
+    request_sequence()

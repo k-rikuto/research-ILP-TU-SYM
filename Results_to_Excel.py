@@ -1,7 +1,7 @@
 import pandas as pd
 import os
 
-def results_to_excel(results:dict[str, list[tuple[float, float]]], number_of_runnning:int, topology_name:str, R_number:int, file:str):
+def results_to_excel(results:dict[str, list[tuple[float, float]]], number_of_runnning:int, file:str):
 
     runtime_data = []
     wavelength_data = []
