@@ -1,6 +1,5 @@
 import random as rd
 from tqdm import tqdm
-import gurobipy as gp
 import os
 
 from Network_Topology import get_topology
