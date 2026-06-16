@@ -3,17 +3,7 @@ from tqdm import tqdm
 import os
 
 from Network_Topology import get_topology
-from ILP_RCWA_01 import ILP_RCWA_01
-from ILP_RCWA_02 import ILP_RCWA_02
-from ILP_RCWA_03 import ILP_RCWA_03
-from ILP_RCWA_04 import ILP_RCWA_04
-from ILP_RCWA_SLC_01 import ILP_RCWA_SLC_01
-from ILP_RCWA_SLC_02 import ILP_RCWA_SLC_02
-from ILP_RCWA_SLC_03 import ILP_RCWA_SLC_03
-from ILP_RCWA_SLC_04 import ILP_RCWA_SLC_04
-from ILP_RWA_01 import ILP_RWA_01
-from ILP_RWA_02 import ILP_RWA_02
-from ILP_RWA_03 import ILP_RWA_03
+from execute_a_model import execute_a_model
 from Results_to_Excel import results_to_excel
 from Analyze_Request import analyze_request
 
@@ -100,7 +90,7 @@ def main():
 
 
         for m in tqdm(model, leave=False):      
-            isOptimal,runtime,wavelength = eval(m)(graph=graph, R=R, W=W, C=C)
+            runtime,wavelength = execute_a_model(model_name=m, graph=graph, R=R)
             results[m].append((runtime, wavelength))
             results_runtime[m].append(runtime)
             results_wavelength[m].append(wavelength)

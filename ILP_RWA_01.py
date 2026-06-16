@@ -1,6 +1,6 @@
 import gurobipy as gp
 import networkx as nx
-
+from convert_vars_to_data import convert_vars_to_data
 
 '''
 SLCなし、完全単模性を保持せずに、対称性を完全に削除したRWAモデル
@@ -37,7 +37,7 @@ SLCなし、完全単模性を保持せずに、対称性を完全に削除し�
 
 '''
 
-def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int]=[], timelimit=0, getPath=False, restart=False):
+def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], timelimit=0, restart=False):
 
     if timelimit == 0:
         # ログを非表示にするための環境設定
@@ -169,19 +169,8 @@ def ILP_RWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int
         for w in W:
             if beta[w].X > EPS:
                 w_used += 1
-        if getPath:
-            path = {r:set() for r in R}
-            w_alloc = {r:set() for r in R}
-            for r,e,w in alpha:
-                (v,u) = e
-                e_reverse = (u,v)
-                if alpha[r,e,w].X > EPS:
-                    w_alloc[r].add(w)
-                    if v > u:   path[r].add((w,e_reverse))
-                    else:   path[r].add((w,e))
-            return True, round(runtime, 2), w_used, path, w_alloc
-        else:
-            return True, round(runtime, 2), w_used
+        data = convert_vars_to_data(alpha=alpha, E_DIR=E_DIR, R=R, W=W)
+        return True, round(runtime, 2), w_used, data
     ## 何かしらのエラーが発生した際の処理
     else:
         print("何かしらのエラーが発生")
