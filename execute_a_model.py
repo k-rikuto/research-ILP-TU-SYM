@@ -23,42 +23,87 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
     # コアの集合
     C = {1, 2, 3, 4}
 
+    isRWA = False
     if model_name == "ILP_RCWA_01":
-        isOptimal, runtime, wavelength, data = ILP_RCWA_01(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_max, data = ILP_RCWA_01(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_02":
-        isOptimal, runtime, wavelength, data = ILP_RCWA_02(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_max, data = ILP_RCWA_02(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_03":
-        isOptimal, runtime, wavelength, data = ILP_RCWA_03(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_max, data = ILP_RCWA_03(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_04":
-        isOptimal, runtime, wavelength, data = ILP_RCWA_04(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_max, data = ILP_RCWA_04(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_SLC_01":
-        isOptimal, runtime, wavelength, data = ILP_RCWA_SLC_01(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_max, data = ILP_RCWA_SLC_01(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_SLC_02":
-        isOptimal, runtime, wavelength, data = ILP_RCWA_SLC_02(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_max, data = ILP_RCWA_SLC_02(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_SLC_03":
-        isOptimal, runtime, wavelength, data = ILP_RCWA_SLC_03(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_max, data = ILP_RCWA_SLC_03(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_SLC_04":
-        isOptimal, runtime, wavelength, data = ILP_RCWA_SLC_04(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_max, data = ILP_RCWA_SLC_04(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RWA_01":
-        isOptimal, runtime, wavelength, data = ILP_RWA_01(graph=graph, R=R, W=W)
+        isOptimal, runtime, w_max, data = ILP_RWA_01(graph=graph, R=R, W=W)
+        isRWA = True
     elif model_name == "ILP_RWA_02":
-        isOptimal, runtime, wavelength, data = ILP_RWA_02(graph=graph, R=R, W=W)
+        isOptimal, runtime, w_max, data = ILP_RWA_02(graph=graph, R=R, W=W)
+        isRWA = True
     elif model_name == "ILP_RWA_03":
-        isOptimal, runtime, wavelength, data = ILP_RWA_03(graph=graph, R=R, W=W)
+        isOptimal, runtime, w_max, data = ILP_RWA_03(graph=graph, R=R, W=W)
+        isRWA = True
     else:
+        print("モデルがありません。")
         runtime = 0.0
-        wavelength = 0
+        w_max = 0
         isOptimal = False
     
-    print(__name__)
     if __name__ == "__main__":
         if isOptimal:
-            for r in data:
-                print(f"リクエスト{r}:{data[r]["Request"]}")
-                print(f"パス：{data[r]["Path"]}")
-                print(f"波長：{data[r]["Wavelength"]}")
-    
-    return runtime, wavelength
+            
+            # 各リンクごとにどのリクエストが使用しているかを可視化
+            empty = "--"
+            if isRWA:
+                visualize_links = {link:[empty for i in range(w_max)] for link in graph.edges}
+                for r_index in data:
+                    r,p,w = data[r_index]
+                    if r_index < 10:
+                        r_index_str = f"0{r_index}"
+                    else:
+                        r_index_str = f"{r_index}"
+                    for  u,v,c in p:
+                        if u<=v:
+                            visualize_links[(u,v)][w-1] = r_index_str
+                        else:
+                            visualize_links[(v,u)][w-1] = r_index_str
+                
+                for link in visualize_links:
+                    print(link,end="")
+                    print("[",end="")
+                    for space in visualize_links[link]:
+                        print(" "+space+" ",end="")
+                    print("]")
+            else:
+                visualize_links = {link:{c:[empty for i in range(w_max)] for c in C} for link in graph.edges}
+                for r_index in data:
+                    r,p,w = data[r_index]
+                    if r_index < 10:
+                        r_index_str = f"0{r_index}"
+                    else:
+                        r_index_str = f"{r_index}"
+                    for  u,v,c in p:
+                        if u<=v:
+                            visualize_links[(u,v)][c][w-1] = r_index_str
+                        else:
+                            visualize_links[(v,u)][c][w-1] = r_index_str
+
+                for link in visualize_links:
+                    print(link)
+                    for c in C:
+                        print("コア",c,end=" ")
+                        print("[",end="")
+                        for space in visualize_links[link][c]:
+                            print(" "+space+" ",end="")
+                        print("]")
+
+    return runtime, w_max
 
 
 
@@ -66,7 +111,7 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
 if __name__ == "__main__":
     # 実験に使用するネットワークトポロジーを選択する
     graph,topology_name = get_topology(topology_number=3)
-    model_name = "ILP_RWA_01"
+    model_name = "ILP_RCWA_01"
 
     R_sd = [(1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), (1,10), (1,11), (1,12),
         (2,3), (2,4), (2,5), (2,6), (2,7), (2,8), (2,9), (2,10), (2,11), (2,12),
@@ -88,7 +133,6 @@ if __name__ == "__main__":
     print(f"ネットワークトポロジー：{topology_name}")
     var = input("実行を続けますか？[Y/n]：")
     if var == "Y":
-        runtime, wavelength = execute_a_model(model_name=model_name, graph=graph, R=R)
-    
-    print(runtime,wavelength)
+        runtime, w_max = execute_a_model(model_name=model_name, graph=graph, R=R)
+        print(runtime,w_max)
 

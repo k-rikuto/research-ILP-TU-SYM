@@ -4,7 +4,7 @@ from gurobipy import Var
 数理モデルが求めた全ての解をdict[request_num : dict["Request" : (src,dest), "Path" : パス集合, "Wavelength" : 波長インデックス]]のデータベース形式に変換する関数
 
 '''
-def convert_vars_to_data(alpha:dict[tuple[int,tuple[int,int],int,int],Var], E_DIR:set[tuple[int,int]], R:dict[int,tuple[int,int]], W:set[int], C:set[int]=set({})) -> dict[int,dict[str,tuple[int,int]|set[tuple[int,int,int]]|int]]:
+def convert_vars_to_data(alpha:dict[tuple[int,tuple[int,int],int,int],Var], E_DIR:set[tuple[int,int]], R:dict[int,tuple[int,int]], W:set[int], C:set[int]=set({})) -> dict[int,tuple[tuple[int,int],set[tuple[int,int,int]],int]]:
 
     data = {}
 
@@ -41,17 +41,17 @@ def convert_vars_to_data(alpha:dict[tuple[int,tuple[int,int],int,int],Var], E_DI
                 if wavelength:
                     if alpha[r_num,e,wavelength].X > 0.8:
                         (u,v)=e
-                        path.add((u,v))
+                        path.add((u,v,1))
                 # wavelengthが決まっていないときwavelenghtも探索  
                 else:
                     for w in W:
                         if alpha[r_num,e,w].X > 0.8:
                             (u,v)=e
-                            path.add((u,v))
+                            path.add((u,v,1))
                             wavelength = w
                             break
                             
         
-        data[r_num] = {"Request":r, "Path":path, "Wavelength":wavelength}
+        data[r_num] = (r, path, wavelength)
 
     return data
