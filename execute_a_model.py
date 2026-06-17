@@ -12,6 +12,8 @@ from ILP_RWA_01 import ILP_RWA_01
 from ILP_RWA_02 import ILP_RWA_02
 from ILP_RWA_03 import ILP_RWA_03
 from Network_Topology import get_topology
+from check_cycle import check_cycle
+
 
 def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) -> tuple[float, int]:
 
@@ -57,13 +59,21 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
     
     if __name__ == "__main__":
         if isOptimal:
+
+            for r_index in data:
+                r,p,w = data[r_index]
+                print("リクエスト",r_index,":",r)
+                print("パス",p)
+                print("波長",w)
             
             # 各リンクごとにどのリクエストが使用しているかを可視化
             empty = "--"
+            cycle_num = 0
             if isRWA:
                 visualize_links = {link:[empty for i in range(w_max)] for link in graph.edges}
                 for r_index in data:
                     r,p,w = data[r_index]
+                    if check_cycle(r=r,path=p,V=graph.nodes): cycle_num = cycle_num+1
                     if r_index < 10:
                         r_index_str = f"0{r_index}"
                     else:
@@ -84,6 +94,7 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
                 visualize_links = {link:{c:[empty for i in range(w_max)] for c in C} for link in graph.edges}
                 for r_index in data:
                     r,p,w = data[r_index]
+                    if check_cycle(r=r,path=p,V=graph.nodes): cycle_num = cycle_num+1
                     if r_index < 10:
                         r_index_str = f"0{r_index}"
                     else:
@@ -102,6 +113,7 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
                         for space in visualize_links[link][c]:
                             print(" "+space+" ",end="")
                         print("]")
+            print("閉路の数",cycle_num)
 
     return runtime, w_max
 
@@ -111,7 +123,7 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
 if __name__ == "__main__":
     # 実験に使用するネットワークトポロジーを選択する
     graph,topology_name = get_topology(topology_number=3)
-    model_name = "ILP_RCWA_01"
+    model_name = "ILP_RCWA_04"
 
     R_sd = [(1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), (1,10), (1,11), (1,12),
         (2,3), (2,4), (2,5), (2,6), (2,7), (2,8), (2,9), (2,10), (2,11), (2,12),
