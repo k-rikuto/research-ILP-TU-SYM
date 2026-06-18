@@ -1,4 +1,6 @@
 import networkx as nx
+import os
+import pandas as pd
 
 from ILP_RCWA_01 import ILP_RCWA_01
 from ILP_RCWA_02 import ILP_RCWA_02
@@ -15,7 +17,7 @@ from Network_Topology import get_topology
 from check_cycle import check_cycle
 
 
-def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) -> tuple[float, int]:
+def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) -> tuple[float,int]|tuple[dict[tuple[int,int,int],list[str]], int]:
 
     
     # 波長
@@ -57,63 +59,45 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
         w_max = 0
         isOptimal = False
     
+    if isRWA: C={1}
+    
     if __name__ == "__main__":
         if isOptimal:
-
-            for r_index in data:
-                r,p,w = data[r_index]
-                print("リクエスト",r_index,":",r)
-                print("パス",p)
-                print("波長",w)
+            # for r_index in data:
+            #     r,p,w = data[r_index]
+            #     print("リクエスト",r_index,":",r)
+            #     print("パス",p)
+            #     print("波長",w)
             
             # 各リンクごとにどのリクエストが使用しているかを可視化
-            empty = "--"
+            empty = "---"
             cycle_num = 0
-            if isRWA:
-                visualize_links = {link:[empty for i in range(w_max)] for link in graph.edges}
-                for r_index in data:
-                    r,p,w = data[r_index]
-                    if check_cycle(r=r,path=p,V=graph.nodes): cycle_num = cycle_num+1
-                    if r_index < 10:
-                        r_index_str = f"0{r_index}"
+            visualized_links = {(u,v,c): [empty for i in range(w_max)] for u,v in graph.edges for c in C}
+            for r_index in data:
+                r,p,w = data[r_index]
+                if check_cycle(r=r,path=p,V=graph.nodes): cycle_num = cycle_num+1
+                if r_index < 10:
+                    r_index_str = f"00{r_index}"
+                elif r_index < 100:
+                    r_index_str = f"0{r_index}"
+                else:
+                    r_index_str = f"{r_index}"
+                for  u,v,c in p:
+                    if u<=v:
+                        visualized_links[(u,v,c)][w-1] = r_index_str
                     else:
-                        r_index_str = f"{r_index}"
-                    for  u,v,c in p:
-                        if u<=v:
-                            visualize_links[(u,v)][w-1] = r_index_str
-                        else:
-                            visualize_links[(v,u)][w-1] = r_index_str
-                
-                for link in visualize_links:
-                    print(link,end="")
-                    print("[",end="")
-                    for space in visualize_links[link]:
-                        print(" "+space+" ",end="")
-                    print("]")
-            else:
-                visualize_links = {link:{c:[empty for i in range(w_max)] for c in C} for link in graph.edges}
-                for r_index in data:
-                    r,p,w = data[r_index]
-                    if check_cycle(r=r,path=p,V=graph.nodes): cycle_num = cycle_num+1
-                    if r_index < 10:
-                        r_index_str = f"0{r_index}"
-                    else:
-                        r_index_str = f"{r_index}"
-                    for  u,v,c in p:
-                        if u<=v:
-                            visualize_links[(u,v)][c][w-1] = r_index_str
-                        else:
-                            visualize_links[(v,u)][c][w-1] = r_index_str
+                        visualized_links[(v,u,c)][w-1] = r_index_str
 
-                for link in visualize_links:
-                    print(link)
-                    for c in C:
-                        print("コア",c,end=" ")
-                        print("[",end="")
-                        for space in visualize_links[link][c]:
-                            print(" "+space+" ",end="")
-                        print("]")
-            print("閉路の数",cycle_num)
+            # for u,v,c in visualize_links:
+            #     print((u,v))
+            #     for c in C:
+            #         print("コア",c,end=" ")
+            #         print("[",end="")
+            #         for space in visualize_links[u,v,c]:
+            #             print(" "+space+" ",end="")
+            #         print("]")
+
+            return visualized_links, cycle_num
 
     return runtime, w_max
 
@@ -123,7 +107,7 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
 if __name__ == "__main__":
     # 実験に使用するネットワークトポロジーを選択する
     graph,topology_name = get_topology(topology_number=3)
-    model_name = "ILP_RCWA_04"
+    models = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_04","ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03", "ILP_RCWA_SLC_04"]
 
     R_sd = [(1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), (1,10), (1,11), (1,12),
         (2,3), (2,4), (2,5), (2,6), (2,7), (2,8), (2,9), (2,10), (2,11), (2,12),
@@ -139,12 +123,39 @@ if __name__ == "__main__":
         for j in range(r_num[i]):
             R[num] = R_sd[i]
             num = num+1
-
-    print(f"リクエストの数：{sum(r_num)}")
-    print(f"モデル：{model_name}")
+    
+    R_number = sum(r_num)
+    print(f"リクエストの数：{R_number}")
+    print(f"モデル：{models}")
     print(f"ネットワークトポロジー：{topology_name}")
     var = input("実行を続けますか？[Y/n]：")
     if var == "Y":
-        runtime, w_max = execute_a_model(model_name=model_name, graph=graph, R=R)
-        print(runtime,w_max)
+
+        results_links = []
+        results_cycle = []
+
+        for model_name in models:
+            visualized_links, cycle_num = execute_a_model(model_name=model_name, graph=graph, R=R)
+
+            for links,resource in visualized_links:
+                
+
+            results_links.append(visualized_links)
+            results_cycle.append(cycle_num)
+        
+        
+        # ディレクトリがない場合、生成
+        dir = f"./results/{topology_name}/"
+        if not os.path.exists(dir):
+            if not os.path.exists("./results"):
+                os.mkdir("./results")
+                os.mkdir(dir)
+            else:
+                os.mkdir(dir)
+        
+        file = dir + f"results_request_{R_number}_visualized_links.xlsx"
+        # Excelに書き込み
+        with pd.ExcelWriter(file) as writer:
+            runtime_df.to_excel(writer, sheet_name='runtime')
+            wavelength_df.to_excel(writer, sheet_name='wavelength')
 
