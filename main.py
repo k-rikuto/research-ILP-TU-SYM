@@ -90,7 +90,7 @@ def main():
 
 
         for m in tqdm(model, leave=False):      
-            runtime,wavelength = execute_a_model(model_name=m, graph=graph, R=R)
+            runtime,wavelength, w_max = execute_a_model(model_name=m, graph=graph, R=R)
             results[m].append((runtime, wavelength))
             results_runtime[m].append(runtime)
             results_wavelength[m].append(wavelength)

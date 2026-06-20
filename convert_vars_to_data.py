@@ -4,9 +4,10 @@ from gurobipy import Var
 数理モデルが求めた全ての解をdict[request_num : dict["Request" : (src,dest), "Path" : パス集合, "Wavelength" : 波長インデックス]]のデータベース形式に変換する関数
 
 '''
-def convert_vars_to_data(alpha:dict[tuple[int,tuple[int,int],int,int],Var], E_DIR:set[tuple[int,int]], R:dict[int,tuple[int,int]], W:set[int], C:set[int]=set({})) -> dict[int,tuple[tuple[int,int],set[tuple[int,int,int]],int]]:
+def convert_vars_to_data(alpha:dict[tuple[int,tuple[int,int],int,int],Var], E_DIR:set[tuple[int,int]], R:dict[int,tuple[int,int]], W:set[int], C:set[int]=set({})) -> tuple[dict[int,tuple[tuple[int,int],set[tuple[int,int,int]],int]],int]:
 
     data = {}
+    w_max = -1000
 
     # 変数alphaから(リンク,コア)と波長を抽出し、辞書に保存する
     for r_num,r in R.items():
@@ -35,6 +36,7 @@ def convert_vars_to_data(alpha:dict[tuple[int,tuple[int,int],int,int],Var], E_DI
                                 path_flag = True
                                 path.add((u,v,c))
                                 wavelength = w
+                                if w_max < wavelength: w_max = wavelength
                                 break
             else:
                 # wavelengthが決まっているときwのループを省く
@@ -49,9 +51,10 @@ def convert_vars_to_data(alpha:dict[tuple[int,tuple[int,int],int,int],Var], E_DI
                             (u,v)=e
                             path.add((u,v,1))
                             wavelength = w
+                            if w_max < wavelength: w_max = wavelength
                             break
                             
         
         data[r_num] = (r, path, wavelength)
 
-    return data
+    return data, w_max

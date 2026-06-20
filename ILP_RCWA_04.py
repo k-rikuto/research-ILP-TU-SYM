@@ -39,7 +39,7 @@ SLCなし、完全単模性を保持せずに、対称性を完全に削除し�
 
 '''
 
-def ILP_RCWA_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int], timelimit=0, restart=False):
+def ILP_RCWA_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[int], timelimit=0, restart=False) -> tuple[bool,float,int,dict[int, tuple[tuple[int, int], set[tuple[int, int, int]], int]],int]:
 
     if timelimit == 0:
         # ログを非表示にするための環境設定
@@ -74,7 +74,7 @@ def ILP_RCWA_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
         L_incoming[v].add((u,v))
 
     # 実行時間の初期化
-    runtime = 0
+    runtime = 0.0
     
     # モデルの構築
     if restart:
@@ -170,9 +170,13 @@ def ILP_RCWA_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
 
     model.optimize()
 
-    runtime += model.Runtime
+    isOptimal = False
+    runtime += float(model.Runtime)
     w_used = 0
-    ## タイムリミットで中断した際の処理
+    data = {}
+    w_max = -100
+
+    ## タイムリミットで中断した際の処理 + モデルが正常終了した時の処理 + モデルが異常終了した時の処理
     # モデルの途中解、分枝の状態、累積計算時間を保存する
     if model.Status == gp.GRB.TIME_LIMIT:
         if model.SolCount > 0:
@@ -182,18 +186,18 @@ def ILP_RCWA_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
                     f.write(f"{runtime}")
         else:
             print("実行可能解が見つかっていない。")
-        return False, runtime, w_used
     ## 最適解を計算できた際の処理
     # runtime, w_usedを返す。getPathがTrueの時、pathとw_allocも返す
     elif model.Status == gp.GRB.OPTIMAL:
+        isOptimal = True
         EPS = 0.5
         for w in W:
             if beta[w].X > EPS:
                 w_used += 1
-        data = convert_vars_to_data(alpha=alpha, E_DIR=E_DIR, R=R, W=W, C=C)
-        return True, round(runtime, 2), w_used, data
+        data, w_max = convert_vars_to_data(alpha=alpha, E_DIR=E_DIR, R=R, W=W, C=C)
     ## 何かしらのエラーが発生した際の処理
     else:
         print("何かしらのエラーが発生")
         print(f"ステータスコード：{model.Status}")
-        return False, round(runtime, 2), w_used
+    
+    return isOptimal, round(runtime, 2), w_used, data, w_max

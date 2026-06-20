@@ -17,11 +17,11 @@ from Network_Topology import get_topology
 from check_cycle import check_cycle
 
 
-def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) -> tuple[float,int]|tuple[dict[tuple[int,int,int],list[str]], int]:
+def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]], visualized_links:dict[tuple[int,int,int],list[str]]={}) -> tuple[float,int]:
 
     
     # 波長
-    W_number = 50
+    W_number = 35
     W = {i+1 for i in range(W_number)}
 
     # コアの集合
@@ -29,33 +29,34 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
 
     isRWA = False
     if model_name == "ILP_RCWA_01":
-        isOptimal, runtime, w_max, data = ILP_RCWA_01(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_used, data, w_max = ILP_RCWA_01(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_02":
-        isOptimal, runtime, w_max, data = ILP_RCWA_02(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_used, data, w_max = ILP_RCWA_02(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_03":
-        isOptimal, runtime, w_max, data = ILP_RCWA_03(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_used, data, w_max = ILP_RCWA_03(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_04":
-        isOptimal, runtime, w_max, data = ILP_RCWA_04(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_used, data, w_max = ILP_RCWA_04(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_SLC_01":
-        isOptimal, runtime, w_max, data = ILP_RCWA_SLC_01(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_used, data, w_max = ILP_RCWA_SLC_01(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_SLC_02":
-        isOptimal, runtime, w_max, data = ILP_RCWA_SLC_02(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_used, data, w_max = ILP_RCWA_SLC_02(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_SLC_03":
-        isOptimal, runtime, w_max, data = ILP_RCWA_SLC_03(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_used, data, w_max = ILP_RCWA_SLC_03(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RCWA_SLC_04":
-        isOptimal, runtime, w_max, data = ILP_RCWA_SLC_04(graph=graph, R=R, W=W, C=C)
+        isOptimal, runtime, w_used, data, w_max = ILP_RCWA_SLC_04(graph=graph, R=R, W=W, C=C)
     elif model_name == "ILP_RWA_01":
-        isOptimal, runtime, w_max, data = ILP_RWA_01(graph=graph, R=R, W=W)
+        isOptimal, runtime, w_used, data, w_max = ILP_RWA_01(graph=graph, R=R, W=W)
         isRWA = True
     elif model_name == "ILP_RWA_02":
-        isOptimal, runtime, w_max, data = ILP_RWA_02(graph=graph, R=R, W=W)
+        isOptimal, runtime, w_used, data, w_max = ILP_RWA_02(graph=graph, R=R, W=W)
         isRWA = True
     elif model_name == "ILP_RWA_03":
-        isOptimal, runtime, w_max, data = ILP_RWA_03(graph=graph, R=R, W=W)
+        isOptimal, runtime, w_used, data, w_max = ILP_RWA_03(graph=graph, R=R, W=W)
         isRWA = True
     else:
         print("モデルがありません。")
         runtime = 0.0
+        w_used = 0
         w_max = 0
         isOptimal = False
     
@@ -72,7 +73,9 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
             # 各リンクごとにどのリクエストが使用しているかを可視化
             empty = "---"
             cycle_num = 0
-            visualized_links = {(u,v,c): [empty for i in range(w_max)] for u,v in graph.edges for c in C}
+            for u,v in graph.edges:
+                for c in C:
+                    visualized_links[(u,v,c)] = [empty for i in range(w_max)]
             for r_index in data:
                 r,p,w = data[r_index]
                 if check_cycle(r=r,path=p,V=graph.nodes): cycle_num = cycle_num+1
@@ -97,17 +100,16 @@ def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]]) 
             #             print(" "+space+" ",end="")
             #         print("]")
 
-            return visualized_links, cycle_num
+            print("閉路の数",cycle_num)
 
-    return runtime, w_max
-
+    return runtime, w_used, w_max
 
 
 
 if __name__ == "__main__":
     # 実験に使用するネットワークトポロジーを選択する
     graph,topology_name = get_topology(topology_number=3)
-    models = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_04","ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03", "ILP_RCWA_SLC_04"]
+    models = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_04"]#,"ILP_RCWA_SLC_01", "ILP_RCWA_SLC_02", "ILP_RCWA_SLC_03", "ILP_RCWA_SLC_04"]
 
     R_sd = [(1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), (1,10), (1,11), (1,12),
         (2,3), (2,4), (2,5), (2,6), (2,7), (2,8), (2,9), (2,10), (2,11), (2,12),
@@ -116,6 +118,8 @@ if __name__ == "__main__":
         (7,8), (7,9), (7,10), (7,11), (7,12),(8,9), (8,10), (8,11), (8,12), (9,10), (9,11), (9,12), (10,11), (10,12), (11,12)
         ]
     r_num = [1, 1, 1, 3, 1, 4, 0, 3, 0, 2, 2, 2, 2, 1, 1, 0, 3, 2, 1, 2, 0, 0, 4, 3, 3, 0, 0, 2, 0, 1, 1, 1, 0, 1, 2, 2, 0, 0, 2, 0, 3, 1, 0, 1, 2, 0, 1, 1, 1, 1, 2, 1, 1, 0, 0, 0, 2, 0, 0, 2, 0, 2, 1, 1, 1, 2]
+
+    r_num = [1, 1, 1, 3, 0, 4, 0, 0, 0, 0, 2, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 
     R:dict[int,tuple[int,int]] = {}
     num = 1
@@ -131,17 +135,12 @@ if __name__ == "__main__":
     var = input("実行を続けますか？[Y/n]：")
     if var == "Y":
 
-        results_links = []
-        results_cycle = []
-
+        df_list: list[pd.DataFrame] = []
         for model_name in models:
-            visualized_links, cycle_num = execute_a_model(model_name=model_name, graph=graph, R=R)
-
-            for links,resource in visualized_links:
-                
-
-            results_links.append(visualized_links)
-            results_cycle.append(cycle_num)
+            visualized_links:dict[tuple[int,int,int],list[str]] = {}
+            runtime, w_used, w_max = execute_a_model(model_name=model_name, graph=graph, R=R, visualized_links=visualized_links)
+            wavelength_list = [f"{w}" for w in range(1,w_max+1)]
+            df_list.append(pd.DataFrame(visualized_links.values(), index=[f"{links}" for links in visualized_links.keys()], columns=wavelength_list))
         
         
         # ディレクトリがない場合、生成
@@ -156,6 +155,6 @@ if __name__ == "__main__":
         file = dir + f"results_request_{R_number}_visualized_links.xlsx"
         # Excelに書き込み
         with pd.ExcelWriter(file) as writer:
-            runtime_df.to_excel(writer, sheet_name='runtime')
-            wavelength_df.to_excel(writer, sheet_name='wavelength')
+            for i in range(len(df_list)):
+                df_list[i].to_excel(writer, sheet_name=models[i])
 
