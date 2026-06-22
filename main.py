@@ -24,10 +24,10 @@ MODEL = ["ILP_RCWA_01", "ILP_RCWA_02", "ILP_RCWA_03", "ILP_RCWA_04","ILP_RCWA_SL
 
 def main():
     ## 変更場所
-    R_number = 10           # リクエストの数
-    number_of_running = 1   # 試行回数
+    R_number = 100           # リクエストの数
+    number_of_running = 10   # 試行回数
     model = MODEL       # 検証で扱うモデル
-    request_log_flag = False
+    request_log_flag = True
 
 
     # 実験に使用するネットワークトポロジーを選択する

@@ -6,12 +6,21 @@ def analyze_request(R_list_list:list[list[tuple[int,int]]], V:set, file:str):
     R_set = []
     R_set_str = []
     V_src = V.copy()
-    V_dist = V.copy()
+    V_dest = V.copy()
+
+    # リクエストのsrc, destの順番を無視
+    # for src in V_src:
+    #     V_dest -= {src}
+    #     for dest in V_dest:
+    #         R_set.append((src,dest))
+    #         R_set_str.append(f"({src},{dest})")
+    
+    # リクエストをそのまま使用
     for src in V_src:
-        V_dist -= {src}
-        for dist in V_dist:
-            R_set.append((src,dist))
-            R_set_str.append(f"({src},{dist})")
+        for dest in V_dest:
+            if src != dest:
+                R_set.append((src,dest))
+                R_set_str.append(f"({src},{dest})") 
     
     r_num_init = {r:0 for r in R_set}
     r_num = r_num_init.copy()
@@ -23,9 +32,10 @@ def analyze_request(R_list_list:list[list[tuple[int,int]]], V:set, file:str):
         times += 1
         times_list.append(times)
         for r in R_list:
-            src, dist = r
-            if src < dist:  r_num[(src,dist)] += 1
-            else:   r_num[(dist,src)] += 1
+            # src, dest = r
+            # if src < dest:  r_num[(src,dest)] += 1
+            # else:   r_num[(dest,src)] += 1
+            r_num[r] += 1
         r_num_list.append(list(r_num.values()))
         r_num = r_num_init.copy()
 
