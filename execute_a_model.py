@@ -15,6 +15,7 @@ from ILP_RWA_02 import ILP_RWA_02
 from ILP_RWA_03 import ILP_RWA_03
 from Network_Topology import get_topology
 from check_cycle import check_cycle
+from generate_request import generate_request
 
 
 def execute_a_model(model_name:str, graph:nx.Graph, R:dict[int,tuple[int,int]], visualized_links:dict[tuple[int,int,int],list[str]]={}) -> tuple[float,int]:
@@ -124,8 +125,7 @@ if __name__ == "__main__":
             if src != dest:
                 R_sd.append((src, dest))
     
-    
-    r_num = [1, 2, 2, 0, 0, 0, 2, 0, 1, 2, 0, 1, 0, 0, 3, 1, 0, 0, 2, 1, 2, 1, 0, 0, 3, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 2, 1, 1, 1, 1, 0, 0, 0, 1, 2, 1, 0, 0, 0, 2, 0, 0, 2, 2, 3, 1, 0, 1, 1, 2, 1, 1, 0, 0, 0, 3, 0, 1, 2, 0, 2, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 1, 2, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 2, 0, 0, 0, 1, 3, 1, 2, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 1, 0, 2, 0, 1, 0, 1, 0, 0]
+    r_num =  generate_request()
 
     R_error = False
     R:dict[int,tuple[int,int]] = {}
