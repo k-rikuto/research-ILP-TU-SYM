@@ -165,6 +165,7 @@ def ILP_RCWA_01(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
         
         model.setObjective(w_max, gp.GRB.MINIMIZE)
         model.update()
+        model.Params.LogFile = "Logs/RCWA_01.log"
     
 
     # 時間制限の設定

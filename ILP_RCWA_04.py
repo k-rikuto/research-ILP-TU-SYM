@@ -158,6 +158,7 @@ def ILP_RCWA_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
         
         model.setObjective(gp.quicksum(beta[w] for w in W), gp.GRB.MINIMIZE)
         model.update()
+        model.Params.LogFile = "Logs/RCWA_04.log"
     
 
     # 時間制限の設定
