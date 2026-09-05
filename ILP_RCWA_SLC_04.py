@@ -46,7 +46,7 @@ def ILP_RCWA_SLC_04(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:se
         env = gp.Env(empty=True)
         env.setParam('OutputFlag', 1)
         env.setParam('LogToConsole', 0)
-        env.setParam('LogFile', "results/Logs/RCWA_SLC_01.log")
+        env.setParam('LogFile', "results/Logs/RCWA_SLC_04.log")
         env.start()
     else:
         env = gp.Env()
