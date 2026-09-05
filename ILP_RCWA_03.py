@@ -44,7 +44,9 @@ def ILP_RCWA_03(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
     if timelimit == 0:
         # ログを非表示にするための環境設定
         env = gp.Env(empty=True)
-        env.setParam('OutputFlag', 0)
+        env.setParam('OutputFlag', 1)
+        env.setParam('LogToConsole', 0)
+        env.setParam('LogFile', "results/Logs/RCWA_03.log")
         env.start()
     else:
         env = gp.Env()
@@ -153,8 +155,6 @@ def ILP_RCWA_03(graph:nx.Graph, R:dict[int,tuple[int,int]], W:set[int], C:set[in
         
         model.setObjective(gp.quicksum(beta[w] for w in W), gp.GRB.MINIMIZE)
         model.update()
-        model.Params.LogFile = "results/Logs/RCWA_03.log"
-    
 
     # 時間制限の設定
     if timelimit != 0:
